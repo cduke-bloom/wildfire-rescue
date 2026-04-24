@@ -1,0 +1,30 @@
+{
+	"indexes": [
+		{
+			"collectionGroup": "listings",
+			"queryScope": "COLLECTION",
+			"fields": [
+				{ "fieldPath": "active", "order": "ASCENDING" },
+				{ "fieldPath": "type", "order": "ASCENDING" },
+				{ "fieldPath": "county", "order": "ASCENDING" }
+			]
+		},
+		{
+			"collectionGroup": "listings",
+			"queryScope": "COLLECTION",
+			"fields": [
+				{ "fieldPath": "active", "order": "ASCENDING" },
+				{ "fieldPath": "type", "order": "ASCENDING" }
+			]
+		},
+		{
+			"collectionGroup": "listings",
+			"queryScope": "COLLECTION",
+			"fields": [
+				{ "fieldPath": "active", "order": "ASCENDING" },
+				{ "fieldPath": "county", "order": "ASCENDING" }
+			]
+		}
+	],
+	"fieldOverrides": []
+}

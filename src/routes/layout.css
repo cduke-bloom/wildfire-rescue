@@ -1,0 +1,61 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/typography';
+
+:root {
+	--brand: #c2410c;
+}
+
+html,
+body {
+	height: 100%;
+	background: #fff7ed;
+}
+
+/* -------- components -------- */
+
+.btn {
+	@apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 font-medium transition-colors
+		disabled:opacity-50 disabled:cursor-not-allowed;
+}
+.btn-sm {
+	@apply px-3 py-1.5 text-sm rounded-md;
+}
+.btn-xs {
+	@apply px-2 py-1 text-xs rounded;
+}
+.btn-ghost {
+	@apply bg-transparent hover:bg-black/5;
+}
+.btn-outline {
+	@apply border bg-transparent;
+}
+
+.input,
+.select,
+.textarea {
+	@apply w-full rounded-md border border-stone-300 bg-white px-3 py-2
+		focus:border-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-200;
+}
+.input-bordered,
+.select-bordered,
+.textarea-bordered {
+	@apply border-stone-300;
+}
+
+.checkbox {
+	@apply rounded border-stone-400 text-orange-700 focus:ring-orange-500;
+	width: 1.25rem;
+	height: 1.25rem;
+}
+.checkbox-sm {
+	width: 1rem;
+	height: 1rem;
+}
+
+.badge {
+	@apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+}
+.badge-sm {
+	@apply px-2 py-0.5 text-[10px];
+}
