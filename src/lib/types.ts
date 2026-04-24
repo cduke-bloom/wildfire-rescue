@@ -14,6 +14,37 @@ export const LISTING_TYPE_LABEL: Record<ListingType, string> = {
 	need_items: 'Need supplies'
 };
 
+// What a *browser* is looking for (viewer perspective, not poster perspective)
+export const BROWSE_FILTER: Record<
+	ListingType,
+	{ label: string; sub: string; emoji: string; classes: string }
+> = {
+	offer_shelter: {
+		label: 'Find a place to stay',
+		sub: 'Hosts offering rooms or homes',
+		emoji: '🏠',
+		classes: 'bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-900'
+	},
+	offer_items: {
+		label: 'Find supplies',
+		sub: 'Donated water, food, hygiene, etc.',
+		emoji: '🎁',
+		classes: 'bg-sky-50 hover:bg-sky-100 border-sky-200 text-sky-900'
+	},
+	need_shelter: {
+		label: 'See who needs a host',
+		sub: 'Families looking for a place to stay',
+		emoji: '🤝',
+		classes: 'bg-orange-50 hover:bg-orange-100 border-orange-200 text-orange-900'
+	},
+	need_items: {
+		label: 'See what people need',
+		sub: 'Specific supply requests',
+		emoji: '📦',
+		classes: 'bg-rose-50 hover:bg-rose-100 border-rose-200 text-rose-900'
+	}
+};
+
 export interface UserDoc {
 	uid: string;
 	displayName: string;

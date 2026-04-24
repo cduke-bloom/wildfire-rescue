@@ -5,6 +5,7 @@
 	import { authState } from '$lib/stores/user';
 	import { subscribeListings } from '$lib/db';
 	import {
+		BROWSE_FILTER,
 		COUNTIES,
 		LISTING_TYPE_LABEL,
 		type County,
@@ -12,7 +13,7 @@
 		type ListingType
 	} from '$lib/types';
 
-	const TYPES: ListingType[] = ['offer_shelter', 'need_shelter', 'offer_items', 'need_items'];
+	const TYPES: ListingType[] = ['offer_shelter', 'offer_items', 'need_shelter', 'need_items'];
 
 	let type = $state<ListingType | ''>('');
 	let county = $state<County | ''>('');
@@ -46,6 +47,11 @@
 		resubscribe();
 	}
 
+	function selectType(t: ListingType | '') {
+		type = t;
+		updateFilters();
+	}
+
 	onMount(sync);
 	onDestroy(() => unsub?.());
 
@@ -62,18 +68,34 @@
 </script>
 
 <h1 class="text-2xl font-bold text-orange-800">Browse</h1>
+<p class="text-sm text-stone-600 mt-1">What are you looking for?</p>
 
-<div class="mt-4 flex flex-wrap gap-3">
-	<select
-		class="select select-bordered bg-white"
-		bind:value={type}
-		onchange={updateFilters}
+<div class="mt-3 grid grid-cols-2 md:grid-cols-4 gap-2">
+	{#each TYPES as t}
+		{@const f = BROWSE_FILTER[t]}
+		<button
+			type="button"
+			onclick={() => selectType(type === t ? '' : t)}
+			class={`text-left rounded-xl border p-3 transition ${f.classes} ${type === t ? 'ring-2 ring-orange-500' : ''}`}
+		>
+			<div class="text-2xl">{f.emoji}</div>
+			<div class="font-semibold mt-1 text-sm">{f.label}</div>
+			<div class="text-xs opacity-80 mt-0.5">{f.sub}</div>
+		</button>
+	{/each}
+</div>
+
+{#if type}
+	<button
+		class="mt-3 text-sm text-orange-700 underline"
+		onclick={() => selectType('')}
 	>
-		<option value="">All listing types</option>
-		{#each TYPES as t}
-			<option value={t}>{LISTING_TYPE_LABEL[t]}</option>
-		{/each}
-	</select>
+		Clear filter — show everything
+	</button>
+{/if}
+
+<label class="mt-4 flex flex-wrap items-center gap-2">
+	<span class="text-sm text-stone-700">In:</span>
 	<select
 		class="select select-bordered bg-white"
 		bind:value={county}
@@ -84,7 +106,7 @@
 			<option value={c}>{c} County</option>
 		{/each}
 	</select>
-</div>
+</label>
 
 {#if visible.length === 0}
 	<p class="mt-10 text-center text-stone-600">
