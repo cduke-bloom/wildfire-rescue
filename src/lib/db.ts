@@ -98,17 +98,19 @@ export async function openOrCreateThread(
 ): Promise<string> {
 	const id = threadIdFor(me.uid, other.uid, listing?.id);
 	const ref = doc(db(), 'threads', id);
-	const snap = await getDoc(ref);
-	if (!snap.exists()) {
-		const thread: Omit<Thread, 'id'> = {
-			participants: [me.uid, other.uid],
-			participantNames: { [me.uid]: me.name, [other.uid]: other.name },
-			listingId: listing?.id,
-			listingTitle: listing?.title,
-			updatedAt: Date.now()
-		};
-		await setDoc(ref, clean(thread));
-	}
+	// Sorted so both participants produce the same array — required by the
+	// "participants cannot be changed" update rule.
+	const participants = [me.uid, other.uid].sort();
+	const data: Omit<Thread, 'id'> = {
+		participants,
+		participantNames: { [me.uid]: me.name, [other.uid]: other.name },
+		listingId: listing?.id,
+		listingTitle: listing?.title,
+		updatedAt: Date.now()
+	};
+	// merge:true → creates if missing, updates if it exists. Avoids a getDoc
+	// that would fail under the read rule for non-existent threads.
+	await setDoc(ref, clean(data), { merge: true });
 	return id;
 }
 

@@ -28,14 +28,26 @@
 		}
 	});
 
+	let contactError = $state('');
+	let contacting = $state(false);
+
 	async function contact() {
 		if (!$authState.user || !$authState.profile || !listing) return;
-		const threadId = await openOrCreateThread(
-			{ uid: $authState.user.uid, name: $authState.profile.displayName },
-			{ uid: listing.ownerUid, name: listing.ownerName },
-			{ id: listing.id, title: listing.title }
-		);
-		await goto(`/messages/${threadId}/`);
+		contacting = true;
+		contactError = '';
+		try {
+			const threadId = await openOrCreateThread(
+				{ uid: $authState.user.uid, name: $authState.profile.displayName },
+				{ uid: listing.ownerUid, name: listing.ownerName },
+				{ id: listing.id, title: listing.title }
+			);
+			await goto(`/messages/${threadId}/`);
+		} catch (e) {
+			contactError = e instanceof Error ? e.message : 'Could not open chat.';
+			console.error('contact failed', e);
+		} finally {
+			contacting = false;
+		}
 	}
 
 	async function deactivate() {
@@ -118,8 +130,12 @@
 					Remove listing
 				</button>
 			{:else if $authState.user}
-				<button class="btn bg-orange-700 text-white hover:bg-orange-800 border-0" onclick={contact}>
-					💬 Message {listing.ownerName.split(' ')[0]}
+				<button
+					class="btn bg-orange-700 text-white hover:bg-orange-800 border-0"
+					onclick={contact}
+					disabled={contacting}
+				>
+					{contacting ? 'Opening…' : `💬 Message ${listing.ownerName.split(' ')[0]}`}
 				</button>
 				<button class="btn btn-sm btn-ghost text-stone-600" onclick={report}>Report</button>
 				<button class="btn btn-sm btn-ghost text-stone-600" onclick={block}>Block user</button>
@@ -129,6 +145,12 @@
 				</button>
 			{/if}
 		</div>
+
+		{#if contactError}
+			<p class="mt-3 text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded p-2">
+				{contactError}
+			</p>
+		{/if}
 	</article>
 
 	<p class="mt-4 text-xs text-stone-500 text-center">
