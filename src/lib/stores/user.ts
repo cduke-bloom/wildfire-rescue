@@ -39,11 +39,11 @@ export function initAuth() {
 			profile = {
 				uid: user.uid,
 				displayName: user.displayName ?? 'Anonymous',
-				photoURL: user.photoURL ?? undefined,
-				email: user.email ?? undefined,
 				createdAt: Date.now(),
 				blocked: []
 			};
+			if (user.photoURL) profile.photoURL = user.photoURL;
+			if (user.email) profile.email = user.email;
 			await setDoc(ref, { ...profile, createdAtServer: serverTimestamp() });
 		}
 		authState.set({ ready: true, user, profile });
@@ -71,7 +71,9 @@ export async function acceptTos(uid: string) {
 }
 
 export async function updateProfile(uid: string, patch: Partial<UserDoc>) {
-	await setDoc(doc(db(), 'users', uid), patch, { merge: true });
+	const clean: Record<string, unknown> = {};
+	for (const [k, v] of Object.entries(patch)) if (v !== undefined) clean[k] = v;
+	await setDoc(doc(db(), 'users', uid), clean, { merge: true });
 	authState.update((s) =>
 		s.profile ? { ...s, profile: { ...s.profile, ...patch } } : s
 	);

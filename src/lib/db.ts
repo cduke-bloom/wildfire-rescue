@@ -25,13 +25,22 @@ import type {
 	County
 } from '$lib/types';
 
+// Firestore rejects `undefined` — strip it from writes
+function clean<T extends Record<string, unknown>>(obj: T): Partial<T> {
+	const out: Record<string, unknown> = {};
+	for (const [k, v] of Object.entries(obj)) {
+		if (v !== undefined) out[k] = v;
+	}
+	return out as Partial<T>;
+}
+
 // ---------- Listings ----------
 
 export async function createListing(
 	listing: Omit<Listing, 'id' | 'createdAt'>
 ): Promise<string> {
 	const ref = await addDoc(collection(db(), 'listings'), {
-		...listing,
+		...clean(listing),
 		createdAt: Date.now(),
 		createdAtServer: serverTimestamp()
 	});
@@ -39,7 +48,7 @@ export async function createListing(
 }
 
 export async function updateListing(id: string, patch: Partial<Listing>) {
-	await updateDoc(doc(db(), 'listings', id), patch);
+	await updateDoc(doc(db(), 'listings', id), clean(patch));
 }
 
 export async function getListing(id: string): Promise<Listing | null> {
@@ -98,7 +107,7 @@ export async function openOrCreateThread(
 			listingTitle: listing?.title,
 			updatedAt: Date.now()
 		};
-		await setDoc(ref, thread);
+		await setDoc(ref, clean(thread));
 	}
 	return id;
 }
