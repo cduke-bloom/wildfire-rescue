@@ -13,8 +13,9 @@ service cloud.firestore {
 
     // -------- users --------
     match /users/{uid} {
-      // public profile fields readable to any signed-in user
-      allow read: if isSignedIn();
+      // public profile fields (display name, county, bio) readable by anyone
+      // so that listings can show owner name even before the viewer signs in
+      allow read: if true;
       // owner can create/update their own profile only
       allow create: if isOwner(uid)
                     && request.resource.data.uid == uid;
@@ -24,8 +25,8 @@ service cloud.firestore {
 
     // -------- listings --------
     match /listings/{id} {
-      // active listings are readable by any signed-in user
-      allow read: if isSignedIn();
+      // listings are a public board — anyone can browse without signing in
+      allow read: if true;
 
       allow create: if isSignedIn()
                     && request.resource.data.ownerUid == request.auth.uid
