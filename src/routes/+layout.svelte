@@ -2,20 +2,23 @@
 	import './layout.css';
 	import { onMount } from 'svelte';
 	import { authState, initAuth, signInWithGoogle, signOutUser } from '$lib/stores/user';
+	import { initMyThreads, unreadCount } from '$lib/stores/messages';
 	import { page } from '$app/state';
 
 	let { children } = $props();
 
 	onMount(() => {
 		initAuth();
+		const stop = initMyThreads();
+		return stop;
 	});
 
 	let menuOpen = $state(false);
 	const nav = [
-		{ href: '/browse/', label: 'Browse' },
-		{ href: '/listing/new/', label: 'Post' },
-		{ href: '/messages/', label: 'Messages' },
-		{ href: '/about/', label: 'About' }
+		{ href: '/browse/', label: 'Browse', key: 'browse' as const },
+		{ href: '/listing/new/', label: 'Post', key: 'post' as const },
+		{ href: '/messages/', label: 'Messages', key: 'messages' as const },
+		{ href: '/about/', label: 'About', key: 'about' as const }
 	];
 </script>
 
@@ -44,9 +47,19 @@
 				{#each nav as n}
 					<a
 						href={n.href}
-						class="hover:text-orange-100"
-						class:underline={page.url.pathname.startsWith(n.href)}>{n.label}</a
+						class="hover:text-orange-100 relative"
+						class:underline={page.url.pathname.startsWith(n.href)}
 					>
+						{n.label}
+						{#if n.key === 'messages' && $unreadCount > 0}
+							<span
+								class="absolute -top-2 -right-4 bg-red-500 text-white text-[10px] font-bold rounded-full px-1.5 py-0.5 min-w-[18px] text-center"
+								aria-label={`${$unreadCount} unread`}
+							>
+								{$unreadCount}
+							</span>
+						{/if}
+					</a>
 				{/each}
 				{#if $authState.ready}
 					{#if $authState.user}
@@ -83,7 +96,21 @@
 		{#if menuOpen}
 			<div class="md:hidden bg-orange-800 px-4 py-3 space-y-2">
 				{#each nav as n}
-					<a href={n.href} class="block py-1" onclick={() => (menuOpen = false)}>{n.label}</a>
+					<a
+						href={n.href}
+						class="flex items-center gap-2 py-1"
+						onclick={() => (menuOpen = false)}
+					>
+						{n.label}
+						{#if n.key === 'messages' && $unreadCount > 0}
+							<span
+								class="bg-red-500 text-white text-[10px] font-bold rounded-full px-1.5 py-0.5 min-w-[18px] text-center"
+								aria-label={`${$unreadCount} unread`}
+							>
+								{$unreadCount}
+							</span>
+						{/if}
+					</a>
 				{/each}
 				{#if $authState.user}
 					<a href="/profile/" class="block py-1" onclick={() => (menuOpen = false)}>Profile</a>

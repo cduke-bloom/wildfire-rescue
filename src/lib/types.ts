@@ -89,6 +89,13 @@ export interface Thread {
 	lastMessage?: string;
 	lastSender?: string;
 	updatedAt: number;
+	readAt?: Record<string, number>;
+}
+
+export function isThreadUnread(t: Thread, uid: string): boolean {
+	if (!t.lastSender || t.lastSender === uid) return false;
+	const seen = t.readAt?.[uid] ?? 0;
+	return t.updatedAt > seen;
 }
 
 export interface Message {

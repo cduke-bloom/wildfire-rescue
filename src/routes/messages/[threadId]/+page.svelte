@@ -4,7 +4,7 @@
 	import { doc, getDoc } from 'firebase/firestore';
 	import { db } from '$lib/firebase';
 	import { authState } from '$lib/stores/user';
-	import { blockUid, sendMessage, submitReport, subscribeMessages } from '$lib/db';
+	import { blockUid, markThreadRead, sendMessage, submitReport, subscribeMessages } from '$lib/db';
 	import type { Message, Thread } from '$lib/types';
 
 	const threadId = $derived(page.params.threadId!);
@@ -19,11 +19,13 @@
 	$effect(() => {
 		unsub?.();
 		if (!$authState.user || !threadId) return;
+		const myUid = $authState.user.uid;
 		void loadThread();
 		unsub = subscribeMessages(threadId, async (m) => {
 			messages = m;
 			await tick();
 			listEl?.scrollTo({ top: listEl.scrollHeight });
+			void markThreadRead(threadId, myUid).catch(() => {});
 		});
 	});
 

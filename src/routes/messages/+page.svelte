@@ -1,20 +1,9 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
 	import { authState } from '$lib/stores/user';
-	import { subscribeMyThreads } from '$lib/db';
-	import type { Thread } from '$lib/types';
+	import { myThreads } from '$lib/stores/messages';
+	import { isThreadUnread, type Thread } from '$lib/types';
 
-	let threads = $state<Thread[]>([]);
-	let unsub: (() => void) | null = null;
-
-	$effect(() => {
-		unsub?.();
-		if ($authState.user) {
-			unsub = subscribeMyThreads($authState.user.uid, (t) => (threads = t));
-		}
-	});
-
-	onDestroy(() => unsub?.());
+	const threads = $derived($myThreads);
 
 	function other(t: Thread): { uid: string; name: string } {
 		const myUid = $authState.user?.uid;
@@ -43,20 +32,26 @@
 	<ul class="mt-4 space-y-2">
 		{#each threads as t (t.id)}
 			{@const o = other(t)}
+			{@const unread = $authState.user ? isThreadUnread(t, $authState.user.uid) : false}
 			<li>
 				<a
 					href={`/messages/${t.id}/`}
-					class="block bg-white rounded-xl border border-stone-200 shadow-sm p-4 hover:shadow-md"
+					class="block bg-white rounded-xl border shadow-sm p-4 hover:shadow-md {unread ? 'border-orange-400 ring-1 ring-orange-200' : 'border-stone-200'}"
 				>
-					<div class="flex justify-between items-baseline">
-						<p class="font-semibold text-stone-800">{o.name}</p>
-						<span class="text-xs text-stone-500">{timeAgo(t.updatedAt)}</span>
+					<div class="flex justify-between items-baseline gap-2">
+						<p class="font-semibold text-stone-800 flex items-center gap-2">
+							{o.name}
+							{#if unread}
+								<span class="bg-red-500 text-white text-[10px] font-bold rounded-full px-2 py-0.5">NEW</span>
+							{/if}
+						</p>
+						<span class="text-xs text-stone-500 shrink-0">{timeAgo(t.updatedAt)}</span>
 					</div>
 					{#if t.listingTitle}
 						<p class="text-xs text-stone-500 mt-0.5">about: {t.listingTitle}</p>
 					{/if}
 					{#if t.lastMessage}
-						<p class="text-sm text-stone-700 mt-1 line-clamp-1">
+						<p class="text-sm mt-1 line-clamp-1 {unread ? 'text-stone-900 font-medium' : 'text-stone-700'}">
 							{t.lastSender === $authState.user?.uid ? 'You: ' : ''}{t.lastMessage}
 						</p>
 					{/if}
