@@ -21,11 +21,19 @@
 		if (!$authState.user || !threadId) return;
 		const myUid = $authState.user.uid;
 		void loadThread();
+		// Mark read on entry, before messages load — clears the red dot
+		// even if subscribeMessages is slow or empty.
+		markThreadRead(threadId, myUid).catch((e) =>
+			console.error('markThreadRead (entry) failed', e)
+		);
 		unsub = subscribeMessages(threadId, async (m) => {
 			messages = m;
 			await tick();
 			listEl?.scrollTo({ top: listEl.scrollHeight });
-			void markThreadRead(threadId, myUid).catch(() => {});
+			// Mark read again whenever new messages arrive while we're here.
+			markThreadRead(threadId, myUid).catch((e) =>
+				console.error('markThreadRead (on message) failed', e)
+			);
 		});
 	});
 
