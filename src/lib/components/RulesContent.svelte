@@ -36,6 +36,9 @@
 	<ul>
 		<li><strong>Don't use multiple accounts</strong> to manipulate the platform.</li>
 		<li><strong>Don't repost the same listing repeatedly</strong> to game visibility.</li>
+		<li>
+			<strong>Close your listing once your need is met.</strong> When you've been hosted, found a guest, received the items, or your situation is otherwise resolved, mark your listing as fulfilled. Leaving stale listings up wastes other people's time and clutters the board.
+		</li>
 		<li><strong>Use the Report button</strong> on any listing or message to flag a violation. Use Block to stop seeing someone.</li>
 	</ul>
 

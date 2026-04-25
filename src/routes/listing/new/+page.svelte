@@ -83,6 +83,11 @@
 {:else}
 	<h1 class="text-2xl font-bold text-orange-800">Post a listing</h1>
 	<p class="mt-1 text-sm text-stone-600">Takes about a minute. You can edit or remove it later.</p>
+	<div class="mt-3 bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-sm text-emerald-900">
+		<strong>Please close your listing once your need is met.</strong> When you've found a host or
+		your supplies have been delivered, mark it as fulfilled so others know it's no longer available.
+		This is part of the community rules.
+	</div>
 
 	<form onsubmit={(e) => { e.preventDefault(); save(); }} class="mt-6 space-y-5 bg-white rounded-2xl p-5 shadow border border-stone-200">
 		<label class="block">

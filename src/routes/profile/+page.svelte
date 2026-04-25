@@ -1,7 +1,14 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { authState, updateProfile } from '$lib/stores/user';
-	import { getMyListings, requestListingReview, resubmitForApproval, updateListing } from '$lib/db';
+	import {
+		closeListing,
+		getMyListings,
+		reopenListing,
+		requestListingReview,
+		resubmitForApproval,
+		updateListing
+	} from '$lib/db';
 	import { COUNTIES, LISTING_TYPE_LABEL, type County, type Listing } from '$lib/types';
 
 	let displayName = $state('');
@@ -42,13 +49,23 @@
 		}
 	}
 
-	async function toggleActive(l: Listing) {
-		// Don't let the owner re-activate a listing that an admin suspended
-		if (l.suspended && !l.active) {
+	async function close(l: Listing) {
+		if (
+			!confirm(
+				`Mark "${l.title}" as fulfilled?\n\nIt will no longer appear in Browse. You can reopen it later if needed.`
+			)
+		)
+			return;
+		await closeListing(l.id);
+		if ($authState.user) listings = await getMyListings($authState.user.uid);
+	}
+
+	async function reopen(l: Listing) {
+		if (l.suspended) {
 			alert('This listing was suspended by a moderator. Use "Request review" instead.');
 			return;
 		}
-		await updateListing(l.id, { active: !l.active });
+		await reopenListing(l.id);
 		if ($authState.user) listings = await getMyListings($authState.user.uid);
 	}
 
@@ -115,16 +132,19 @@
 			{#each listings as l (l.id)}
 				{@const pending = l.approvalStatus === 'pending'}
 				{@const rejected = l.approvalStatus === 'rejected'}
+				{@const closed = !!l.closedAt}
 				{@const status = l.suspended
 					? '🚫 suspended by moderator'
 					: pending
 						? '⏳ awaiting approval'
 						: rejected
 							? '❌ not approved'
-							: l.active
-								? '✅ active'
-								: '💤 inactive'}
-				<li class="bg-white rounded-xl border p-4 {l.suspended || rejected ? 'border-rose-300' : pending ? 'border-amber-300' : 'border-stone-200'}">
+							: closed
+								? '✅ fulfilled / closed'
+								: l.active
+									? '✅ active'
+									: '💤 inactive'}
+				<li class="bg-white rounded-xl border p-4 {l.suspended || rejected ? 'border-rose-300' : pending ? 'border-amber-300' : closed ? 'border-emerald-300' : 'border-stone-200'}">
 					<div class="flex justify-between items-start gap-3">
 						<div class="min-w-0">
 							<a href={`/listing/${l.id}/`} class="font-semibold text-stone-800 hover:underline">{l.title}</a>
@@ -132,13 +152,19 @@
 								{LISTING_TYPE_LABEL[l.type]} · {l.county} County · {status}
 							</p>
 						</div>
-						<div class="flex gap-1 shrink-0">
-							<a href={`/listing/${l.id}/edit/`} class="btn btn-sm btn-outline">Edit</a>
+						<div class="flex gap-1 shrink-0 flex-wrap justify-end">
 							{#if !l.suspended && !pending && !rejected}
-								<button class="btn btn-sm btn-outline" onclick={() => toggleActive(l)}>
-									{l.active ? 'Deactivate' : 'Reactivate'}
-								</button>
+								{#if closed}
+									<button class="btn btn-sm bg-emerald-600 text-white hover:bg-emerald-700 border-0" onclick={() => reopen(l)}>
+										Reopen
+									</button>
+								{:else if l.active}
+									<button class="btn btn-sm bg-emerald-600 text-white hover:bg-emerald-700 border-0" onclick={() => close(l)}>
+										✅ Mark fulfilled
+									</button>
+								{/if}
 							{/if}
+							<a href={`/listing/${l.id}/edit/`} class="btn btn-sm btn-outline">Edit</a>
 						</div>
 					</div>
 

@@ -5,10 +5,11 @@
 	import { authState, signInWithGoogle } from '$lib/stores/user';
 	import {
 		blockUid,
+		closeListing,
 		getListing,
 		openOrCreateThread,
-		submitReport,
-		updateListing
+		reopenListing,
+		submitReport
 	} from '$lib/db';
 	import { LISTING_TYPE_LABEL, type Listing } from '$lib/types';
 
@@ -50,11 +51,29 @@
 		}
 	}
 
-	async function deactivate() {
+	async function close() {
 		if (!listing) return;
-		if (!confirm('Remove this listing from the board?')) return;
-		await updateListing(listing.id, { active: false });
-		await goto('/profile/');
+		if (
+			!confirm(
+				'Mark this listing as fulfilled?\n\nIt will no longer appear in Browse. You can reopen it from your profile if you need to.'
+			)
+		)
+			return;
+		await closeListing(listing.id);
+		const fresh = await getListing(listing.id);
+		if (fresh) listing = fresh;
+	}
+
+	async function reopen() {
+		if (!listing) return;
+		if (!confirm('Reopen this listing? It will appear in Browse again.')) return;
+		await reopenListing(listing.id);
+		const fresh = await getListing(listing.id);
+		if (fresh) listing = fresh;
+	}
+
+	function ageDays(ts: number) {
+		return Math.floor((Date.now() - ts) / 86400000);
 	}
 
 	async function report() {
@@ -97,6 +116,19 @@
 		<div class="mt-3 bg-rose-50 border border-rose-300 rounded-xl p-3 text-sm text-rose-900">
 			❌ This listing was not approved. {listing.rejectionReason ? `Reason: ${listing.rejectionReason}` : ''}
 		</div>
+	{:else if listing.closedAt}
+		<div class="mt-3 bg-emerald-50 border border-emerald-300 rounded-xl p-3 text-sm text-emerald-900">
+			✅ Closed by the poster — this need has been fulfilled.
+		</div>
+	{:else if isMine && listing.active && ageDays(listing.createdAt) >= 5}
+		<div class="mt-3 bg-amber-50 border border-amber-300 rounded-xl p-3 text-sm text-amber-900">
+			<strong>This listing has been up for {ageDays(listing.createdAt)} days.</strong>
+			If your need has been met or you've found a host, please mark it as fulfilled
+			so others know it's no longer available.
+			<button class="btn btn-xs bg-emerald-600 text-white border-0 hover:bg-emerald-700 ml-2" onclick={close}>
+				✅ Mark as fulfilled
+			</button>
+		</div>
 	{/if}
 
 	<article class="mt-3 bg-white rounded-2xl shadow p-5 border border-stone-200">
@@ -136,15 +168,21 @@
 
 		<div class="mt-6 flex flex-wrap gap-3 border-t pt-4 border-stone-200">
 			{#if isMine}
+				{#if listing.closedAt}
+					<button class="btn bg-emerald-600 text-white border-0 hover:bg-emerald-700" onclick={reopen}>
+						Reopen listing
+					</button>
+				{:else if listing.active}
+					<button class="btn bg-emerald-600 text-white border-0 hover:bg-emerald-700" onclick={close}>
+						✅ Mark as fulfilled
+					</button>
+				{/if}
 				<a
 					href={`/listing/${listing.id}/edit/`}
 					class="btn btn-outline border-orange-600 text-orange-700 hover:bg-orange-600 hover:text-white"
 				>
 					Edit
 				</a>
-				<button class="btn btn-outline border-rose-600 text-rose-700 hover:bg-rose-600 hover:text-white" onclick={deactivate}>
-					Remove listing
-				</button>
 			{:else if $authState.user}
 				<button
 					class="btn bg-orange-700 text-white hover:bg-orange-800 border-0"

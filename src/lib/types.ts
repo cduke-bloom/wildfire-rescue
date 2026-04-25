@@ -80,6 +80,10 @@ export interface Listing {
 	items?: string[];
 	active: boolean;
 	createdAt: number;
+	// Owner-set: marks the listing as fulfilled / no longer needed.
+	// Distinct from a temporary deactivation in that it represents
+	// a successful outcome and is the expected end-state.
+	closedAt?: number;
 	// Pre-publication approval — required before a listing goes live
 	approvalStatus?: ApprovalStatus;
 	rejectionReason?: string;

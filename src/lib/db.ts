@@ -58,6 +58,22 @@ export async function resubmitForApproval(id: string) {
 	});
 }
 
+// Close a listing when it has been fulfilled — sets closedAt and turns it off.
+// Distinct from a plain deactivation: shows a "Fulfilled" badge.
+export async function closeListing(id: string) {
+	await updateDoc(doc(db(), 'listings', id), {
+		active: false,
+		closedAt: Date.now()
+	});
+}
+
+export async function reopenListing(id: string) {
+	await updateDoc(doc(db(), 'listings', id), {
+		active: true,
+		closedAt: deleteField()
+	});
+}
+
 export async function updateListing(id: string, patch: Partial<Listing>) {
 	await updateDoc(doc(db(), 'listings', id), clean(patch));
 }
