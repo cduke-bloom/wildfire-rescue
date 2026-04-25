@@ -1,0 +1,47 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+	<defs>
+		<linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+			<stop offset="0%" stop-color="#fb923c" />
+			<stop offset="55%" stop-color="#ea580c" />
+			<stop offset="100%" stop-color="#9a3412" />
+		</linearGradient>
+		<filter id="soft" x="-10%" y="-10%" width="120%" height="120%">
+			<feGaussianBlur stdDeviation="2" />
+		</filter>
+	</defs>
+
+	<!-- Rounded square background filling the canvas (Apple-style radius) -->
+	<rect x="0" y="0" width="512" height="512" rx="115" ry="115" fill="url(#bg)" />
+
+	<!-- House silhouette — sits within the maskable safe area (~410x310) -->
+	<path
+		d="M 256 120
+			 L 116 244
+			 L 116 396
+			 Q 116 412 132 412
+			 L 380 412
+			 Q 396 412 396 396
+			 L 396 244 Z"
+		fill="white" />
+
+	<!-- Roof overhang accent -->
+	<path
+		d="M 256 100
+			 L 86 252
+			 L 116 252
+			 L 256 132
+			 L 396 252
+			 L 426 252 Z"
+		fill="white" />
+
+	<!-- Heart in the center of the house body -->
+	<path
+		d="M 256 366
+			 C 252 362 188 322 188 274
+			 C 188 250 206 234 228 234
+			 C 240 234 250 240 256 250
+			 C 262 240 272 234 284 234
+			 C 306 234 324 250 324 274
+			 C 324 322 260 362 256 366 Z"
+		fill="#dc2626" />
+</svg>
