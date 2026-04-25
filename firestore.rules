@@ -49,10 +49,10 @@ service cloud.firestore {
                     || (isSignedIn()
                         && resource.data.ownerUid == request.auth.uid
                         && request.resource.data.ownerUid == resource.data.ownerUid
-                        // Owner cannot change moderation-controlled fields
+                        // Owner cannot change suspension fields
                         && !request.resource.data.diff(resource.data).affectedKeys()
                             .hasAny(['suspended', 'suspendedAt', 'suspendedBy',
-                                     'suspendedReason', 'rejectionReason'])
+                                     'suspendedReason'])
                         // Owner can only set approvalStatus to 'pending' (resubmit)
                         && (!('approvalStatus' in request.resource.data
                               .diff(resource.data).affectedKeys())

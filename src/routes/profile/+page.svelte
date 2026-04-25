@@ -132,11 +132,14 @@
 								{LISTING_TYPE_LABEL[l.type]} · {l.county} County · {status}
 							</p>
 						</div>
-						{#if !l.suspended && !pending && !rejected}
-							<button class="btn btn-sm btn-outline shrink-0" onclick={() => toggleActive(l)}>
-								{l.active ? 'Deactivate' : 'Reactivate'}
-							</button>
-						{/if}
+						<div class="flex gap-1 shrink-0">
+							<a href={`/listing/${l.id}/edit/`} class="btn btn-sm btn-outline">Edit</a>
+							{#if !l.suspended && !pending && !rejected}
+								<button class="btn btn-sm btn-outline" onclick={() => toggleActive(l)}>
+									{l.active ? 'Deactivate' : 'Reactivate'}
+								</button>
+							{/if}
+						</div>
 					</div>
 
 					{#if pending}

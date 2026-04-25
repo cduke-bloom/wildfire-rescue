@@ -136,6 +136,12 @@
 
 		<div class="mt-6 flex flex-wrap gap-3 border-t pt-4 border-stone-200">
 			{#if isMine}
+				<a
+					href={`/listing/${listing.id}/edit/`}
+					class="btn btn-outline border-orange-600 text-orange-700 hover:bg-orange-600 hover:text-white"
+				>
+					Edit
+				</a>
 				<button class="btn btn-outline border-rose-600 text-rose-700 hover:bg-rose-600 hover:text-white" onclick={deactivate}>
 					Remove listing
 				</button>

@@ -62,6 +62,17 @@ export async function updateListing(id: string, patch: Partial<Listing>) {
 	await updateDoc(doc(db(), 'listings', id), clean(patch));
 }
 
+// Owner-edit: any content change re-triggers admin approval and pulls the
+// listing offline until re-approved. Use this — not updateListing — when an
+// owner saves a real edit from the edit form.
+export async function ownerEditListing(id: string, patch: Partial<Listing>) {
+	await updateDoc(doc(db(), 'listings', id), {
+		...clean(patch),
+		active: false,
+		approvalStatus: 'pending'
+	});
+}
+
 export async function getListing(id: string): Promise<Listing | null> {
 	const snap = await getDoc(doc(db(), 'listings', id));
 	if (!snap.exists()) return null;

@@ -52,7 +52,7 @@
 		<li><strong>We do not provide insurance, refunds, replacements, or financial recourse</strong> of any kind.</li>
 		<li><strong>You use this platform entirely at your own risk.</strong></li>
 		<li>
-			<strong>The platform creator, organizers, volunteers, and any affiliated companies (including Bloom Tech Support) are NOT responsible</strong> for any harm, loss, theft, injury, illness, property damage, or other negative outcome resulting from arrangements made through this platform.
+			<strong>The platform creator, organizers, and volunteers are NOT responsible</strong> for any harm, loss, theft, injury, illness, property damage, or other negative outcome resulting from arrangements made through this platform.
 		</li>
 		<li><strong>You are solely responsible</strong> for your own decisions about who to host, whose help to accept, when and where to meet, and what information to share.</li>
 		<li><strong>If something goes wrong, contact the appropriate authorities.</strong> Call <strong>911</strong> for emergencies, your local police for theft or harassment, or <strong>211</strong> / the Red Cross for shelter referrals.</li>
