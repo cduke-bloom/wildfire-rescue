@@ -391,8 +391,9 @@
 		<div class="mt-4 bg-white rounded-2xl border border-stone-200 shadow-sm p-5">
 			<h2 class="font-bold text-stone-900">Invite an admin</h2>
 			<p class="text-sm text-stone-600 mt-1">
-				Enter the Google email of someone you want to grant admin access. They'll get
-				admin powers the next time they sign in.
+				Enter the email of someone you want to grant admin access. They'll get admin
+				powers the next time they sign in. The email must match the address they sign
+				in with.
 			</p>
 			<form
 				onsubmit={(e) => { e.preventDefault(); inviteAdmin(); }}
@@ -401,7 +402,7 @@
 				<input
 					bind:value={newAdminEmail}
 					type="email"
-					placeholder="person@gmail.com"
+					placeholder="person@example.com"
 					class="input input-bordered flex-1 bg-white"
 					required
 				/>

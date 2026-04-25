@@ -88,7 +88,10 @@
 {:else if !$authState.user}
 	<div class="bg-white rounded-2xl p-6 border border-stone-200 shadow">
 		<h1 class="text-xl font-bold text-orange-800">Sign in to post</h1>
-		<p class="mt-2 text-stone-700">You need to sign in with Google before you can post a listing.</p>
+		<p class="mt-2 text-stone-700">
+			You need an account before you can post a listing.
+			<a href="/signin/" class="underline text-orange-700">Sign in or create one →</a>
+		</p>
 	</div>
 {:else}
 	<h1 class="text-2xl font-bold text-orange-800">Post a listing</h1>

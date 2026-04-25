@@ -83,7 +83,7 @@
 			return 'Too many attempts. Try again in a few minutes.';
 		}
 		if (msg.includes('auth/operation-not-allowed')) {
-			return 'Email sign-in isn\'t turned on for this site yet. Try Google sign-in or contact the moderators.';
+			return 'This sign-in method isn\'t turned on for this site yet. Try the other option above or contact the moderators.';
 		}
 		return msg.replace(/^Firebase: /, '');
 	}

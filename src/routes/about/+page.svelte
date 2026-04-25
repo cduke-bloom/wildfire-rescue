@@ -15,7 +15,7 @@
 
 	<h2>How it works</h2>
 	<ol>
-		<li>Sign in with Google.</li>
+		<li>Create a free account with email and password, or continue with Google.</li>
 		<li>Post a listing — either something you can offer, or something you need.</li>
 		<li>Browse other listings and message people directly, inside the app.</li>
 		<li>Meet in a safe public place first, then decide whether to continue.</li>
