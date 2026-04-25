@@ -11,6 +11,14 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == uid;
     }
 
+    function isAdmin() {
+      return isSignedIn()
+        && request.auth.token.email in [
+          'cduke@bloomtechsupport.com',
+          'therealcodyduke@gmail.com'
+        ];
+    }
+
     // -------- users --------
     match /users/{uid} {
       // public profile fields (display name, county, bio) readable by anyone
@@ -37,12 +45,13 @@ service cloud.firestore {
                     && request.resource.data.details is string
                     && request.resource.data.details.size() <= 2000;
 
-      allow update: if isSignedIn()
-                    && resource.data.ownerUid == request.auth.uid
-                    && request.resource.data.ownerUid == resource.data.ownerUid;
+      allow update: if isAdmin()
+                    || (isSignedIn()
+                        && resource.data.ownerUid == request.auth.uid
+                        && request.resource.data.ownerUid == resource.data.ownerUid);
 
-      allow delete: if isSignedIn()
-                    && resource.data.ownerUid == request.auth.uid;
+      allow delete: if isAdmin()
+                    || (isSignedIn() && resource.data.ownerUid == request.auth.uid);
     }
 
     // -------- threads --------
@@ -84,7 +93,9 @@ service cloud.firestore {
                     && request.resource.data.fromUid == request.auth.uid
                     && request.resource.data.reason is string
                     && request.resource.data.reason.size() <= 1000;
-      allow read, update, delete: if false;
+      allow read: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if false;
     }
   }
 }

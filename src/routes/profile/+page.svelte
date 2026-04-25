@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { authState, updateProfile, acceptTos } from '$lib/stores/user';
-	import { getMyListings, updateListing } from '$lib/db';
+	import { authState, updateProfile } from '$lib/stores/user';
+	import { getMyListings, requestListingReview, updateListing } from '$lib/db';
 	import { COUNTIES, LISTING_TYPE_LABEL, type County, type Listing } from '$lib/types';
 
 	let displayName = $state('');
@@ -43,12 +43,28 @@
 	}
 
 	async function toggleActive(l: Listing) {
+		// Don't let the owner re-activate a listing that an admin suspended
+		if (l.suspended && !l.active) {
+			alert('This listing was suspended by a moderator. Use "Request review" instead.');
+			return;
+		}
 		await updateListing(l.id, { active: !l.active });
 		if ($authState.user) listings = await getMyListings($authState.user.uid);
 	}
 
-	async function acceptTerms() {
-		if ($authState.user) await acceptTos($authState.user.uid);
+	async function askReview(l: Listing) {
+		const message = prompt(
+			`Request review of "${l.title}"?\n\nMessage to moderators (explain why this should be restored):`
+		);
+		if (!message) return;
+		await requestListingReview(l.id, message);
+		if ($authState.user) listings = await getMyListings($authState.user.uid);
+		alert('Review requested. A moderator will look at it soon.');
+	}
+
+	function fmtDate(ts?: number) {
+		if (!ts) return '';
+		return new Date(ts).toLocaleString();
 	}
 </script>
 
@@ -57,22 +73,6 @@
 {:else if !$authState.user || !$authState.profile}
 	<p class="text-stone-600">Sign in to view your profile.</p>
 {:else}
-	{#if !$authState.profile.acceptedTosAt}
-		<div class="bg-amber-50 border border-amber-300 rounded-2xl p-5 mb-6">
-			<h2 class="font-bold text-amber-900">Please read and accept before posting or messaging</h2>
-			<ul class="mt-2 text-sm text-stone-800 list-disc pl-5 space-y-1">
-				<li>Brantley Wildfire Rescue is a volunteer community board. We do not verify users or listings.</li>
-				<li>Never exchange money through this platform. Report anyone who asks for payment.</li>
-				<li>Meet in a safe public place first. Don't share your full address until you're comfortable.</li>
-				<li>You use this service at your own risk. The organizers are not responsible for interactions between users.</li>
-				<li>Don't post anything hateful, dangerous, or illegal.</li>
-			</ul>
-			<button class="btn bg-orange-700 text-white hover:bg-orange-800 border-0 mt-4" onclick={acceptTerms}>
-				I understand and accept
-			</button>
-		</div>
-	{/if}
-
 	<h1 class="text-2xl font-bold text-orange-800">Your profile</h1>
 
 	<form onsubmit={(e) => { e.preventDefault(); save(); }} class="mt-4 bg-white rounded-2xl shadow border border-stone-200 p-5 space-y-4">
@@ -104,16 +104,37 @@
 	{#if listings.length === 0}
 		<p class="mt-2 text-stone-600">You haven't posted anything yet. <a href="/listing/new/" class="underline text-orange-700">Post one</a>.</p>
 	{:else}
-		<ul class="mt-3 space-y-2">
+		<ul class="mt-3 space-y-3">
 			{#each listings as l (l.id)}
-				<li class="bg-white rounded-xl border border-stone-200 p-4 flex justify-between items-center">
-					<div>
-						<a href={`/listing/${l.id}/`} class="font-semibold text-stone-800 hover:underline">{l.title}</a>
-						<p class="text-xs text-stone-500 mt-0.5">{LISTING_TYPE_LABEL[l.type]} · {l.county} County · {l.active ? 'active' : 'inactive'}</p>
+				<li class="bg-white rounded-xl border p-4 {l.suspended ? 'border-rose-300' : 'border-stone-200'}">
+					<div class="flex justify-between items-start gap-3">
+						<div class="min-w-0">
+							<a href={`/listing/${l.id}/`} class="font-semibold text-stone-800 hover:underline">{l.title}</a>
+							<p class="text-xs text-stone-500 mt-0.5">
+								{LISTING_TYPE_LABEL[l.type]} · {l.county} County ·
+								{l.suspended ? '🚫 suspended by moderator' : l.active ? '✅ active' : '💤 inactive'}
+							</p>
+						</div>
+						{#if !l.suspended}
+							<button class="btn btn-sm btn-outline shrink-0" onclick={() => toggleActive(l)}>
+								{l.active ? 'Deactivate' : 'Reactivate'}
+							</button>
+						{/if}
 					</div>
-					<button class="btn btn-sm btn-outline" onclick={() => toggleActive(l)}>
-						{l.active ? 'Deactivate' : 'Reactivate'}
-					</button>
+
+					{#if l.suspended}
+						<div class="mt-3 bg-rose-50 border border-rose-200 rounded p-3 text-sm">
+							<p class="font-semibold text-rose-900">Suspended {fmtDate(l.suspendedAt)}</p>
+							<p class="text-rose-800 mt-1">Reason: {l.suspendedReason ?? '(not provided)'}</p>
+						</div>
+						{#if l.reviewRequestedAt}
+							<p class="mt-2 text-xs text-amber-700">Review requested {fmtDate(l.reviewRequestedAt)} — pending moderator response.</p>
+						{:else}
+							<button class="btn btn-sm btn-outline border-amber-500 text-amber-700 hover:bg-amber-50 mt-2" onclick={() => askReview(l)}>
+								Request review
+							</button>
+						{/if}
+					{/if}
 				</li>
 			{/each}
 		</ul>

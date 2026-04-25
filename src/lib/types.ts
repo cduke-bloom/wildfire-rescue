@@ -78,6 +78,14 @@ export interface Listing {
 	items?: string[];
 	active: boolean;
 	createdAt: number;
+	// Moderation state — set by admins
+	suspended?: boolean;
+	suspendedAt?: number;
+	suspendedBy?: string;
+	suspendedReason?: string;
+	// Owner request to review a suspension
+	reviewRequestedAt?: number;
+	reviewMessage?: string;
 }
 
 export interface Thread {
@@ -113,4 +121,8 @@ export interface Report {
 	targetId?: string;
 	reason: string;
 	createdAt: number;
+	resolved?: boolean;
+	resolvedAt?: number;
+	resolvedBy?: string;
+	resolutionNote?: string;
 }

@@ -3,6 +3,8 @@
 	import { onMount } from 'svelte';
 	import { authState, initAuth, signInWithGoogle, signOutUser } from '$lib/stores/user';
 	import { initMyThreads, unreadCount } from '$lib/stores/messages';
+	import { isAdminEmail } from '$lib/admin';
+	import TosOverlay from '$lib/components/TosOverlay.svelte';
 	import { page } from '$app/state';
 
 	let { children } = $props();
@@ -14,12 +16,21 @@
 	});
 
 	let menuOpen = $state(false);
-	const nav = [
+	const baseNav = [
 		{ href: '/browse/', label: 'Browse', key: 'browse' as const },
 		{ href: '/listing/new/', label: 'Post', key: 'post' as const },
 		{ href: '/messages/', label: 'Messages', key: 'messages' as const },
 		{ href: '/about/', label: 'About', key: 'about' as const }
 	];
+	const adminLink = { href: '/admin/', label: 'Admin', key: 'admin' as const };
+
+	const nav = $derived(
+		isAdminEmail($authState.user?.email) ? [...baseNav, adminLink] : baseNav
+	);
+
+	const showTos = $derived(
+		!!$authState.user && !!$authState.profile && !$authState.profile.acceptedTosAt
+	);
 </script>
 
 <div class="min-h-screen flex flex-col">
@@ -125,6 +136,10 @@
 	<main class="flex-1 max-w-5xl w-full mx-auto px-4 py-6">
 		{@render children()}
 	</main>
+
+	{#if showTos}
+		<TosOverlay />
+	{/if}
 
 	<footer class="bg-stone-100 text-stone-700 text-sm">
 		<div class="max-w-5xl mx-auto px-4 py-6 flex flex-wrap gap-4 justify-between">

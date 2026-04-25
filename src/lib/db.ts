@@ -2,6 +2,7 @@ import {
 	addDoc,
 	arrayUnion,
 	collection,
+	deleteField,
 	doc,
 	getDoc,
 	getDocs,
@@ -184,5 +185,66 @@ export async function submitReport(r: Omit<Report, 'id' | 'createdAt'>) {
 export async function blockUid(myUid: string, targetUid: string) {
 	await updateDoc(doc(db(), 'users', myUid), {
 		blocked: arrayUnion(targetUid)
+	});
+}
+
+// ---------- Admin actions ----------
+
+export async function adminSuspendListing(
+	id: string,
+	reason: string,
+	adminUid: string
+) {
+	await updateDoc(doc(db(), 'listings', id), {
+		active: false,
+		suspended: true,
+		suspendedAt: Date.now(),
+		suspendedBy: adminUid,
+		suspendedReason: reason,
+		// Clear any prior review request
+		reviewRequestedAt: deleteField(),
+		reviewMessage: deleteField()
+	});
+}
+
+export async function adminUnsuspendListing(id: string) {
+	await updateDoc(doc(db(), 'listings', id), {
+		active: true,
+		suspended: false,
+		suspendedAt: deleteField(),
+		suspendedBy: deleteField(),
+		suspendedReason: deleteField(),
+		reviewRequestedAt: deleteField(),
+		reviewMessage: deleteField()
+	});
+}
+
+export async function requestListingReview(id: string, message: string) {
+	await updateDoc(doc(db(), 'listings', id), {
+		reviewRequestedAt: Date.now(),
+		reviewMessage: message
+	});
+}
+
+export function subscribeAllListings(cb: (items: Listing[]) => void): Unsubscribe {
+	const q = query(collection(db(), 'listings'), orderBy('createdAt', 'desc'), limit(200));
+	return onSnapshot(q, (snap) => {
+		cb(snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Listing, 'id'>) })));
+	});
+}
+
+export function subscribeReports(cb: (items: Report[]) => void): Unsubscribe {
+	const q = query(collection(db(), 'reports'), orderBy('createdAt', 'desc'), limit(200));
+	return onSnapshot(q, (snap) => {
+		cb(snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Report, 'id'>) })));
+	});
+}
+
+export async function resolveReport(id: string, adminUid: string, note?: string) {
+	await updateDoc(doc(db(), 'reports', id), {
+		resolved: true,
+		resolvedAt: Date.now(),
+		resolvedBy: adminUid,
+		...(note ? { resolutionNote: note } : {})
 	});
 }
