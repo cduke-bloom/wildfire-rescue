@@ -21,6 +21,13 @@
 		<li>Meet in a safe public place first, then decide whether to continue.</li>
 	</ol>
 
+	<h2>See something wrong?</h2>
+	<p>
+		<a href="/report/"><strong>🚩 Report a problem</strong></a> from the footer of any page,
+		or use the Report button on any listing or message. Anyone signed in can report. Reports go
+		straight to volunteer moderators.
+	</p>
+
 	<h2>Other places to get help</h2>
 	<ul>
 		<li><strong>Dial 211</strong> — United Way's local assistance line.</li>

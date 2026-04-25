@@ -118,11 +118,13 @@ export interface Message {
 	ts: number;
 }
 
+export type ReportTargetType = 'listing' | 'message' | 'user' | 'other';
+
 export interface Report {
 	id: string;
 	fromUid: string;
-	targetUid: string;
-	targetType: 'listing' | 'message' | 'user';
+	targetUid?: string;
+	targetType: ReportTargetType;
 	targetId?: string;
 	reason: string;
 	createdAt: number;

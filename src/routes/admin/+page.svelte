@@ -226,7 +226,9 @@
 						</div>
 						<p class="mt-2 text-sm text-stone-800 whitespace-pre-line">{r.reason}</p>
 						<p class="mt-2 text-xs text-stone-500">
-							Reported by uid <code>{r.fromUid.slice(0, 8)}</code>… against uid <code>{r.targetUid.slice(0, 8)}</code>…
+							Reported by uid <code>{r.fromUid.slice(0, 8)}</code>…{r.targetUid
+								? ` against uid ${r.targetUid.slice(0, 8)}…`
+								: ''}
 						</p>
 						<div class="mt-3 flex gap-2">
 							<button class="btn btn-sm bg-stone-700 text-white hover:bg-stone-800 border-0" onclick={() => resolve(r)}>

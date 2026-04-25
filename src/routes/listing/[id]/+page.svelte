@@ -153,12 +153,15 @@
 				>
 					{contacting ? 'Opening…' : `💬 Message ${listing.ownerName.split(' ')[0]}`}
 				</button>
-				<button class="btn btn-sm btn-ghost text-stone-600" onclick={report}>Report</button>
+				<button class="btn btn-sm btn-ghost text-stone-600" onclick={report}>🚩 Report</button>
 				<button class="btn btn-sm btn-ghost text-stone-600" onclick={block}>Block user</button>
 			{:else if $authState.ready}
 				<button class="btn bg-orange-700 text-white hover:bg-orange-800 border-0" onclick={signInWithGoogle}>
 					Sign in to message
 				</button>
+				<a href={`/report/?type=listing&target=${listing.id}`} class="btn btn-sm btn-ghost text-stone-600">
+					🚩 Report
+				</a>
 			{/if}
 		</div>
 
