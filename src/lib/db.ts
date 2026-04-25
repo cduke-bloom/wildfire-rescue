@@ -2,6 +2,7 @@ import {
 	addDoc,
 	arrayUnion,
 	collection,
+	deleteDoc,
 	deleteField,
 	doc,
 	getDoc,
@@ -275,6 +276,25 @@ async function notifyOwner(
 	if (admin.uid === ownerUid) return; // admin acted on their own listing — skip notify
 	const threadId = await openOrCreateThread(admin, { uid: ownerUid, name: ownerName });
 	await sendMessage(threadId, admin.uid, text);
+}
+
+export async function adminDeleteListing(
+	id: string,
+	reason: string,
+	admin: { uid: string; name: string }
+) {
+	const listing = await getListing(id);
+	if (!listing) return;
+	// Notify the owner BEFORE deleting so we still have access to their info
+	if (listing.ownerUid !== admin.uid) {
+		await notifyOwner(
+			admin,
+			listing.ownerUid,
+			listing.ownerName,
+			`🗑️ Your listing "${listing.title}" was removed by a moderator.\n\nReason: ${reason}\n\nIf you think this was a mistake, reply here. You're welcome to post a new listing that follows the community rules.`
+		);
+	}
+	await deleteDoc(doc(db(), 'listings', id));
 }
 
 export async function adminSuspendListing(

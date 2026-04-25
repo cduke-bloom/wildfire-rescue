@@ -4,6 +4,7 @@
 	import { isAdminEmail } from '$lib/admin';
 	import {
 		adminApproveListing,
+		adminDeleteListing,
 		adminRejectListing,
 		adminSuspendListing,
 		adminUnsuspendListing,
@@ -61,6 +62,18 @@
 		const reason = prompt(`Reject "${l.title}"?\n\nReason (will be sent to ${l.ownerName}):`);
 		if (!reason) return;
 		await adminRejectListing(l.id, reason, adminInfo());
+	}
+
+	async function remove(l: Listing) {
+		if (
+			!confirm(
+				`PERMANENTLY DELETE "${l.title}"?\n\nThis cannot be undone. The listing and all of its data will be removed. Use Suspend instead if you might want to restore it later.`
+			)
+		)
+			return;
+		const reason = prompt(`Reason for deletion (sent to ${l.ownerName}):`);
+		if (!reason) return;
+		await adminDeleteListing(l.id, reason, adminInfo());
 	}
 
 	async function suspend(l: Listing) {
@@ -268,15 +281,20 @@
 							{l.suspended ? '🚫 suspended' : l.active ? '✅ active' : '💤 inactive'}
 						</p>
 					</div>
-					{#if l.suspended}
-						<button class="btn btn-sm bg-emerald-600 text-white hover:bg-emerald-700 border-0" onclick={() => unsuspend(l)}>
-							Restore
+					<div class="flex gap-1 shrink-0">
+						{#if l.suspended}
+							<button class="btn btn-sm bg-emerald-600 text-white hover:bg-emerald-700 border-0" onclick={() => unsuspend(l)}>
+								Restore
+							</button>
+						{:else if l.active}
+							<button class="btn btn-sm btn-outline border-rose-400 text-rose-700 hover:bg-rose-50" onclick={() => suspend(l)}>
+								Suspend
+							</button>
+						{/if}
+						<button class="btn btn-sm btn-outline border-rose-700 text-rose-800 hover:bg-rose-700 hover:text-white" onclick={() => remove(l)}>
+							🗑️ Delete
 						</button>
-					{:else if l.active}
-						<button class="btn btn-sm btn-outline border-rose-400 text-rose-700 hover:bg-rose-50" onclick={() => suspend(l)}>
-							Suspend
-						</button>
-					{/if}
+					</div>
 				</li>
 			{/each}
 		</ul>
