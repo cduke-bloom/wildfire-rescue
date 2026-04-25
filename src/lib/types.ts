@@ -1,5 +1,5 @@
-export type County = 'Brantley' | 'Glynn' | 'Camden';
-export const COUNTIES: County[] = ['Brantley', 'Glynn', 'Camden'];
+export type County = 'Brantley' | 'Glynn' | 'Camden' | 'Wayne';
+export const COUNTIES: County[] = ['Brantley', 'Glynn', 'Camden', 'Wayne'];
 
 export type ListingType =
 	| 'offer_shelter'

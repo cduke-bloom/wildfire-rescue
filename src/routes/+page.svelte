@@ -8,8 +8,8 @@
 	</h1>
 	<p class="mt-4 text-lg text-stone-700 max-w-2xl mx-auto">
 		A free community board connecting neighbors in <strong>Brantley</strong>,
-		<strong>Glynn</strong>, and <strong>Camden</strong> counties. Offer a spare room,
-		request a place to stay, share supplies, or ask for what you need.
+		<strong>Glynn</strong>, <strong>Camden</strong>, and <strong>Wayne</strong> counties. Offer a
+		spare room, request a place to stay, share supplies, or ask for what you need.
 	</p>
 	<p class="mt-2 text-sm text-stone-600">No money. No middlemen. Neighbors helping neighbors.</p>
 

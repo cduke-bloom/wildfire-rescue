@@ -150,7 +150,7 @@
 			</label>
 			<label class="block">
 				<span class="font-semibold text-stone-700">City or nearest town <span class="text-stone-400 text-sm">(optional)</span></span>
-				<input bind:value={city} class="input input-bordered w-full mt-1 bg-white" placeholder="e.g. Nahunta, Brunswick, Woodbine" />
+				<input bind:value={city} class="input input-bordered w-full mt-1 bg-white" placeholder="e.g. Nahunta, Brunswick, Woodbine, Jesup" />
 			</label>
 		</div>
 

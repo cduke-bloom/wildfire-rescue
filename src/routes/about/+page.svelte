@@ -8,8 +8,8 @@
 	<h2>What this is</h2>
 	<p>
 		<strong>Brantley Wildfire Rescue</strong> is a volunteer-built community board for neighbors in
-		Brantley, Glynn, and Camden counties, Georgia, affected by the wildfire. People who are displaced can
-		post what they need, and people who want to help can offer a spare room or supplies.
+		Brantley, Glynn, Camden, and Wayne counties, Georgia, affected by the wildfire. People who are
+		displaced can post what they need, and people who want to help can offer a spare room or supplies.
 		<strong>There are no money transactions, ever.</strong>
 	</p>
 

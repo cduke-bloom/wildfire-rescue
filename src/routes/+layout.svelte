@@ -130,7 +130,7 @@
 
 	<footer class="bg-stone-100 text-stone-700 text-sm">
 		<div class="max-w-5xl mx-auto px-4 py-6 flex flex-wrap gap-4 justify-between">
-			<p>Brantley Wildfire Rescue — a community connector for Brantley, Glynn, and Camden counties.</p>
+			<p>Brantley Wildfire Rescue — a community connector for Brantley, Glynn, Camden, and Wayne counties.</p>
 			<div class="flex gap-4 flex-wrap">
 				<a href="/about/" class="underline">About & Rules</a>
 				<a href="/report/" class="underline text-rose-700 font-medium">🚩 Report a problem</a>
