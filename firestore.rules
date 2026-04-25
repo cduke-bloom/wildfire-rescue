@@ -11,12 +11,18 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == uid;
     }
 
-    function isAdmin() {
+    function isSuperAdmin() {
       return isSignedIn()
         && request.auth.token.email in [
           'cduke@bloomtechsupport.com',
           'therealcodyduke@gmail.com'
         ];
+    }
+
+    function isAdmin() {
+      return isSuperAdmin()
+        || (isSignedIn()
+            && exists(/databases/$(database)/documents/admins/$(request.auth.token.email)));
     }
 
     // -------- users --------
@@ -96,6 +102,20 @@ service cloud.firestore {
         allow update: if false;
         allow delete: if false;
       }
+    }
+
+    // -------- admins --------
+    // doc ID is the admin's lowercase email
+    match /admins/{email} {
+      // Each user can read their own admin doc to determine if they're an
+      // admin. Existing admins can read all to see the list.
+      allow read: if isAdmin()
+                  || (isSignedIn() && email == request.auth.token.email);
+      allow create: if isSuperAdmin()
+                    && request.resource.data.email == email
+                    && request.resource.data.addedBy is string;
+      allow update: if false;
+      allow delete: if isSuperAdmin();
     }
 
     // -------- reports --------

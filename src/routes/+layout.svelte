@@ -3,7 +3,6 @@
 	import { onMount } from 'svelte';
 	import { authState, initAuth, signInWithGoogle, signOutUser } from '$lib/stores/user';
 	import { initMyThreads, unreadCount } from '$lib/stores/messages';
-	import { isAdminEmail } from '$lib/admin';
 	import TosOverlay from '$lib/components/TosOverlay.svelte';
 	import { page } from '$app/state';
 
@@ -24,9 +23,7 @@
 	];
 	const adminLink = { href: '/admin/', label: 'Admin', key: 'admin' as const };
 
-	const nav = $derived(
-		isAdminEmail($authState.user?.email) ? [...baseNav, adminLink] : baseNav
-	);
+	const nav = $derived($authState.isAdmin ? [...baseNav, adminLink] : baseNav);
 
 	const showTos = $derived(
 		!!$authState.user && !!$authState.profile && !$authState.profile.acceptedTosAt

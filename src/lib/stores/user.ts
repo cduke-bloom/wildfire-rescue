@@ -9,25 +9,36 @@ import {
 import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { browser } from '$app/environment';
 import { auth, db } from '$lib/firebase';
+import { checkIsAdmin, isSuperAdminEmail } from '$lib/admin';
 import type { UserDoc } from '$lib/types';
 
 export interface AuthState {
 	ready: boolean;
 	user: User | null;
 	profile: UserDoc | null;
+	isAdmin: boolean;
+	isSuperAdmin: boolean;
 }
 
 export const authState: Writable<AuthState> = writable({
 	ready: false,
 	user: null,
-	profile: null
+	profile: null,
+	isAdmin: false,
+	isSuperAdmin: false
 });
 
 export function initAuth() {
 	if (!browser) return;
 	onAuthStateChanged(auth(), async (user) => {
 		if (!user) {
-			authState.set({ ready: true, user: null, profile: null });
+			authState.set({
+				ready: true,
+				user: null,
+				profile: null,
+				isAdmin: false,
+				isSuperAdmin: false
+			});
 			return;
 		}
 		const ref = doc(db(), 'users', user.uid);
@@ -46,7 +57,9 @@ export function initAuth() {
 			if (user.email) profile.email = user.email;
 			await setDoc(ref, { ...profile, createdAtServer: serverTimestamp() });
 		}
-		authState.set({ ready: true, user, profile });
+		const isSuperAdmin = isSuperAdminEmail(user.email);
+		const isAdmin = isSuperAdmin || (await checkIsAdmin(user.email));
+		authState.set({ ready: true, user, profile, isAdmin, isSuperAdmin });
 	});
 }
 

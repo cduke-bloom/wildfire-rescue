@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
 	import { authState } from '$lib/stores/user';
-	import { isAdminEmail } from '$lib/admin';
+	import { addAdmin, listAdmins, removeAdmin, type AdminEntry } from '$lib/admin';
 	import {
 		adminApproveListing,
 		adminDeleteListing,
@@ -16,10 +16,12 @@
 
 	let listings = $state<Listing[]>([]);
 	let reports = $state<Report[]>([]);
+	let admins = $state<AdminEntry[]>([]);
 	let unsubL: (() => void) | null = null;
 	let unsubR: (() => void) | null = null;
 
-	const isAdmin = $derived(isAdminEmail($authState.user?.email));
+	const isAdmin = $derived($authState.isAdmin);
+	const isSuperAdmin = $derived($authState.isSuperAdmin);
 
 	$effect(() => {
 		unsubL?.();
@@ -30,10 +32,51 @@
 		}
 	});
 
+	$effect(() => {
+		if (isSuperAdmin) refreshAdmins();
+	});
+
+	async function refreshAdmins() {
+		try {
+			admins = await listAdmins();
+		} catch (e) {
+			console.error('Failed to load admins', e);
+		}
+	}
+
 	onDestroy(() => {
 		unsubL?.();
 		unsubR?.();
 	});
+
+	let newAdminEmail = $state('');
+	let adminError = $state('');
+	let adminBusy = $state(false);
+
+	async function inviteAdmin() {
+		if (!$authState.user?.email) return;
+		adminError = '';
+		adminBusy = true;
+		try {
+			await addAdmin(newAdminEmail, $authState.user.email);
+			newAdminEmail = '';
+			await refreshAdmins();
+		} catch (e) {
+			adminError = e instanceof Error ? e.message : 'Could not add admin.';
+		} finally {
+			adminBusy = false;
+		}
+	}
+
+	async function revokeAdmin(email: string) {
+		if (!confirm(`Revoke admin access for ${email}?`)) return;
+		try {
+			await removeAdmin(email);
+			await refreshAdmins();
+		} catch (e) {
+			adminError = e instanceof Error ? e.message : 'Could not remove admin.';
+		}
+	}
 
 	const pendingApproval = $derived(
 		listings.filter((l) => l.approvalStatus === 'pending')
@@ -44,7 +87,7 @@
 	const openReports = $derived(reports.filter((r) => !r.resolved));
 	const resolvedReports = $derived(reports.filter((r) => r.resolved));
 
-	let view = $state<'pending' | 'reviews' | 'reports' | 'listings'>('pending');
+	let view = $state<'pending' | 'reviews' | 'reports' | 'listings' | 'admins'>('pending');
 
 	function adminInfo() {
 		return {
@@ -140,6 +183,14 @@
 		>
 			All listings <span class="text-xs">({listings.length})</span>
 		</button>
+		{#if isSuperAdmin}
+			<button
+				class="px-3 py-2 text-sm font-medium whitespace-nowrap {view === 'admins' ? 'border-b-2 border-orange-700 text-orange-800' : 'text-stone-600 hover:text-stone-900'}"
+				onclick={() => (view = 'admins')}
+			>
+				Admins <span class="text-xs">({admins.length})</span>
+			</button>
+		{/if}
 	</div>
 
 	{#if view === 'pending'}
@@ -267,6 +318,60 @@
 					{/each}
 				</ul>
 			</details>
+		{/if}
+	{:else if view === 'admins' && isSuperAdmin}
+		<div class="mt-4 bg-white rounded-2xl border border-stone-200 shadow-sm p-5">
+			<h2 class="font-bold text-stone-900">Invite an admin</h2>
+			<p class="text-sm text-stone-600 mt-1">
+				Enter the Google email of someone you want to grant admin access. They'll get
+				admin powers the next time they sign in.
+			</p>
+			<form
+				onsubmit={(e) => { e.preventDefault(); inviteAdmin(); }}
+				class="mt-3 flex flex-col sm:flex-row gap-2"
+			>
+				<input
+					bind:value={newAdminEmail}
+					type="email"
+					placeholder="person@gmail.com"
+					class="input input-bordered flex-1 bg-white"
+					required
+				/>
+				<button
+					type="submit"
+					class="btn bg-orange-700 text-white hover:bg-orange-800 border-0"
+					disabled={adminBusy}
+				>
+					{adminBusy ? 'Adding…' : 'Add admin'}
+				</button>
+			</form>
+			{#if adminError}
+				<p class="mt-2 text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded p-2">{adminError}</p>
+			{/if}
+		</div>
+
+		<h2 class="mt-6 font-bold text-stone-900">Current admins</h2>
+		{#if admins.length === 0}
+			<p class="mt-2 text-stone-600 text-sm">No invited admins yet.</p>
+		{:else}
+			<ul class="mt-2 space-y-2">
+				{#each admins as a (a.email)}
+					<li class="bg-white rounded-xl border border-stone-200 p-3 flex justify-between items-center gap-2">
+						<div class="min-w-0">
+							<p class="font-medium text-stone-800 truncate">{a.email}</p>
+							{#if a.addedBy}
+								<p class="text-xs text-stone-500">invited by {a.addedBy}{a.addedAt ? ` · ${fmtDate(a.addedAt)}` : ''}</p>
+							{/if}
+						</div>
+						<button
+							class="btn btn-sm btn-outline border-rose-400 text-rose-700 hover:bg-rose-50"
+							onclick={() => revokeAdmin(a.email)}
+						>
+							Revoke
+						</button>
+					</li>
+				{/each}
+			</ul>
 		{/if}
 	{:else}
 		<ul class="mt-4 space-y-2">
