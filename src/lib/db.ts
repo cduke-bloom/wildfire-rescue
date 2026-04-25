@@ -278,6 +278,28 @@ async function notifyOwner(
 	await sendMessage(threadId, admin.uid, text);
 }
 
+export async function adminBanUser(
+	targetUid: string,
+	reason: string,
+	admin: { uid: string; name: string }
+) {
+	await updateDoc(doc(db(), 'users', targetUid), {
+		banned: true,
+		bannedAt: Date.now(),
+		bannedBy: admin.uid,
+		bannedReason: reason
+	});
+}
+
+export async function adminUnbanUser(targetUid: string) {
+	await updateDoc(doc(db(), 'users', targetUid), {
+		banned: false,
+		bannedAt: deleteField(),
+		bannedBy: deleteField(),
+		bannedReason: deleteField()
+	});
+}
+
 export async function adminDeleteListing(
 	id: string,
 	reason: string,

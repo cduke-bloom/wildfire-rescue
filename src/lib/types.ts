@@ -55,6 +55,12 @@ export interface UserDoc {
 	acceptedTosAt?: number;
 	blocked?: string[];
 	createdAt: number;
+	// Set by admin when this user violates the rules.
+	// Banned users can browse but cannot post or message.
+	banned?: boolean;
+	bannedAt?: number;
+	bannedBy?: string;
+	bannedReason?: string;
 }
 
 export interface ShelterPrefs {
@@ -87,6 +93,10 @@ export interface Listing {
 	// Pre-publication approval — required before a listing goes live
 	approvalStatus?: ApprovalStatus;
 	rejectionReason?: string;
+	// Required for need_shelter / need_items listings: the poster certifies
+	// they have been directly affected by the wildfire.
+	affectedAttestation?: boolean;
+	affectedAttestationAt?: number;
 	// Post-publication moderation
 	suspended?: boolean;
 	suspendedAt?: number;

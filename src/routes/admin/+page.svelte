@@ -4,9 +4,11 @@
 	import { addAdmin, listAdmins, removeAdmin, type AdminEntry } from '$lib/admin';
 	import {
 		adminApproveListing,
+		adminBanUser,
 		adminDeleteListing,
 		adminRejectListing,
 		adminSuspendListing,
+		adminUnbanUser,
 		adminUnsuspendListing,
 		resolveReport,
 		subscribeAllListings,
@@ -117,6 +119,19 @@
 		const reason = prompt(`Reason for deletion (sent to ${l.ownerName}):`);
 		if (!reason) return;
 		await adminDeleteListing(l.id, reason, adminInfo());
+	}
+
+	async function banPoster(l: Listing) {
+		if (
+			!confirm(
+				`Ban ${l.ownerName} permanently?\n\nThey will no longer be able to post listings or send messages on this site.`
+			)
+		)
+			return;
+		const reason = prompt('Reason for banning (shown to the user):');
+		if (!reason) return;
+		await adminBanUser(l.ownerUid, reason, adminInfo());
+		alert(`${l.ownerName} has been banned. Consider also deleting their listings.`);
 	}
 
 	async function suspend(l: Listing) {
@@ -398,6 +413,9 @@
 						{/if}
 						<button class="btn btn-sm btn-outline border-rose-700 text-rose-800 hover:bg-rose-700 hover:text-white" onclick={() => remove(l)}>
 							🗑️ Delete
+						</button>
+						<button class="btn btn-sm btn-outline border-rose-900 text-rose-900 hover:bg-rose-900 hover:text-white" onclick={() => banPoster(l)}>
+							🚫 Ban user
 						</button>
 					</div>
 				</li>

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { authState, signInWithGoogle } from '$lib/stores/user';
+	import { authState } from '$lib/stores/user';
 </script>
 
 <section class="py-8 md:py-14 text-center">
@@ -18,9 +18,9 @@
 		{#if $authState.user}
 			<a href="/listing/new/" class="btn btn-outline border-orange-700 text-orange-700 hover:bg-orange-700 hover:text-white">Post a listing</a>
 		{:else if $authState.ready}
-			<button class="btn btn-outline border-orange-700 text-orange-700 hover:bg-orange-700 hover:text-white" onclick={signInWithGoogle}>
+			<a href="/signin/" class="btn btn-outline border-orange-700 text-orange-700 hover:bg-orange-700 hover:text-white">
 				Sign in to post
-			</button>
+			</a>
 		{/if}
 	</div>
 </section>

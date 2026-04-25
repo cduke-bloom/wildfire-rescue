@@ -34,6 +34,12 @@
 
 	<h2 class={compact ? 'text-base font-bold text-stone-900 mt-3' : ''}>Use the platform honestly</h2>
 	<ul>
+		<li>
+			<strong class="text-rose-900">Only request help if you've been affected by the wildfire.</strong>
+			This board exists for people directly displaced or harmed by the Brantley County wildfire.
+			You will be asked to certify this when posting a "need" listing. Submitting false information
+			will result in your account being <strong>permanently banned</strong> and your listings removed.
+		</li>
 		<li><strong>Don't use multiple accounts</strong> to manipulate the platform.</li>
 		<li><strong>Don't repost the same listing repeatedly</strong> to game visibility.</li>
 		<li>

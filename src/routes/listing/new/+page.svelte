@@ -26,11 +26,15 @@
 	// items
 	let itemsText = $state('');
 
+	// Required for need_* listings
+	let affectedAttestation = $state(false);
+
 	let saving = $state(false);
 	let error = $state('');
 
 	const isShelter = $derived(type === 'offer_shelter' || type === 'need_shelter');
 	const isItems = $derived(type === 'offer_items' || type === 'need_items');
+	const isNeed = $derived(type === 'need_shelter' || type === 'need_items');
 
 	async function save() {
 		error = '';
@@ -40,6 +44,10 @@
 		}
 		if (!title.trim() || !details.trim()) {
 			error = 'Please give it a short title and some details.';
+			return;
+		}
+		if (isNeed && !affectedAttestation) {
+			error = 'You must certify that you have been affected by the wildfire.';
 			return;
 		}
 		saving = true;
@@ -62,7 +70,9 @@
 					? { petsOk, kidsOk, maxPeople, durationDays }
 					: undefined,
 				items,
-				active: false
+				active: false,
+				affectedAttestation: isNeed ? true : undefined,
+				affectedAttestationAt: isNeed ? Date.now() : undefined
 			});
 			await goto(`/listing/${id}/?just_posted=1`);
 		} catch (e) {
@@ -174,6 +184,20 @@
 					class="textarea textarea-bordered w-full mt-1 bg-white"
 					placeholder="formula, diapers, bottled water, deodorant, feminine hygiene products, non-perishable food"
 				></textarea>
+			</label>
+		{/if}
+
+		{#if isNeed}
+			<label class="flex items-start gap-3 bg-rose-50 border border-rose-300 rounded-xl p-4 cursor-pointer">
+				<input type="checkbox" bind:checked={affectedAttestation} class="checkbox mt-0.5" />
+				<span class="text-sm text-stone-900">
+					<strong class="text-rose-900">I certify that I or my household have been directly affected</strong>
+					by the Brantley County wildfire — for example, evacuated, lost a home, lost belongings,
+					or otherwise displaced by the fire.
+					<br /><br />
+					I understand that submitting false information will result in my account being
+					<strong>permanently banned</strong> from Brantley Wildfire Rescue and my listing removed.
+				</span>
 			</label>
 		{/if}
 

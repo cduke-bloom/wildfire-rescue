@@ -1,9 +1,10 @@
 <script lang="ts">
 	import './layout.css';
 	import { onMount } from 'svelte';
-	import { authState, initAuth, signInWithGoogle, signOutUser } from '$lib/stores/user';
+	import { authState, initAuth, signOutUser } from '$lib/stores/user';
 	import { initMyThreads, unreadCount } from '$lib/stores/messages';
 	import TosOverlay from '$lib/components/TosOverlay.svelte';
+	import BanOverlay from '$lib/components/BanOverlay.svelte';
 	import { page } from '$app/state';
 
 	let { children } = $props();
@@ -70,9 +71,9 @@
 						</a>
 						<button class="btn btn-sm btn-ghost text-white" onclick={signOutUser}>Sign out</button>
 					{:else}
-						<button class="btn btn-sm bg-white text-orange-700 hover:bg-orange-100" onclick={signInWithGoogle}>
-							Sign in with Google
-						</button>
+						<a href="/signin/" class="btn btn-sm bg-white text-orange-700 hover:bg-orange-100">
+							Sign in
+						</a>
 					{/if}
 				{/if}
 			</nav>
@@ -111,7 +112,7 @@
 					<a href="/profile/" class="block py-1" onclick={() => (menuOpen = false)}>Profile</a>
 					<button class="block py-1" onclick={signOutUser}>Sign out</button>
 				{:else if $authState.ready}
-					<button class="block py-1" onclick={signInWithGoogle}>Sign in with Google</button>
+					<a href="/signin/" class="block py-1" onclick={() => (menuOpen = false)}>Sign in</a>
 				{/if}
 			</div>
 		{/if}
@@ -121,7 +122,9 @@
 		{@render children()}
 	</main>
 
-	{#if showTos}
+	{#if $authState.isBanned}
+		<BanOverlay />
+	{:else if showTos}
 		<TosOverlay />
 	{/if}
 

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { authState, signInWithGoogle } from '$lib/stores/user';
+	import { authState } from '$lib/stores/user';
 	import { submitReport } from '$lib/db';
 	import type { ReportTargetType } from '$lib/types';
 
@@ -131,9 +131,9 @@
 			<div class="bg-amber-50 border border-amber-300 rounded-lg p-3 text-sm">
 				<p class="font-semibold text-amber-900">You'll need to sign in to submit.</p>
 				<p class="text-stone-700 mt-1">We require sign-in to keep moderators from being flooded with spam reports.</p>
-				<button type="button" class="btn btn-sm bg-orange-700 text-white hover:bg-orange-800 border-0 mt-2" onclick={signInWithGoogle}>
-					Sign in with Google
-				</button>
+				<a href="/signin/" class="btn btn-sm bg-orange-700 text-white hover:bg-orange-800 border-0 mt-2">
+					Sign in
+				</a>
 			</div>
 		{:else}
 			<button type="submit" class="btn bg-orange-700 text-white hover:bg-orange-800 border-0 w-full" disabled={submitting}>

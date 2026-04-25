@@ -1,9 +1,13 @@
 import { writable, type Writable } from 'svelte/store';
 import {
 	GoogleAuthProvider,
+	createUserWithEmailAndPassword,
 	onAuthStateChanged,
+	sendPasswordResetEmail,
+	signInWithEmailAndPassword,
 	signInWithPopup,
 	signOut,
+	updateProfile as updateAuthProfile,
 	type User
 } from 'firebase/auth';
 import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
@@ -18,6 +22,7 @@ export interface AuthState {
 	profile: UserDoc | null;
 	isAdmin: boolean;
 	isSuperAdmin: boolean;
+	isBanned: boolean;
 }
 
 export const authState: Writable<AuthState> = writable({
@@ -25,7 +30,8 @@ export const authState: Writable<AuthState> = writable({
 	user: null,
 	profile: null,
 	isAdmin: false,
-	isSuperAdmin: false
+	isSuperAdmin: false,
+	isBanned: false
 });
 
 export function initAuth() {
@@ -37,7 +43,8 @@ export function initAuth() {
 				user: null,
 				profile: null,
 				isAdmin: false,
-				isSuperAdmin: false
+				isSuperAdmin: false,
+				isBanned: false
 			});
 			return;
 		}
@@ -59,13 +66,38 @@ export function initAuth() {
 		}
 		const isSuperAdmin = isSuperAdminEmail(user.email);
 		const isAdmin = isSuperAdmin || (await checkIsAdmin(user.email));
-		authState.set({ ready: true, user, profile, isAdmin, isSuperAdmin });
+		const isBanned = !!profile.banned;
+		authState.set({ ready: true, user, profile, isAdmin, isSuperAdmin, isBanned });
 	});
 }
 
 export async function signInWithGoogle() {
 	const provider = new GoogleAuthProvider();
 	await signInWithPopup(auth(), provider);
+}
+
+export async function signInWithEmail(email: string, password: string) {
+	await signInWithEmailAndPassword(auth(), email.trim(), password);
+}
+
+export async function signUpWithEmail(
+	email: string,
+	password: string,
+	displayName: string
+) {
+	const cred = await createUserWithEmailAndPassword(
+		auth(),
+		email.trim(),
+		password
+	);
+	const name = displayName.trim();
+	if (name) {
+		await updateAuthProfile(cred.user, { displayName: name });
+	}
+}
+
+export async function resetPassword(email: string) {
+	await sendPasswordResetEmail(auth(), email.trim());
 }
 
 export async function signOutUser() {

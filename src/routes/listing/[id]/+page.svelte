@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
-	import { authState, signInWithGoogle } from '$lib/stores/user';
+	import { authState } from '$lib/stores/user';
 	import {
 		blockUid,
 		closeListing,
@@ -194,9 +194,9 @@
 				<button class="btn btn-sm btn-ghost text-stone-600" onclick={report}>🚩 Report</button>
 				<button class="btn btn-sm btn-ghost text-stone-600" onclick={block}>Block user</button>
 			{:else if $authState.ready}
-				<button class="btn bg-orange-700 text-white hover:bg-orange-800 border-0" onclick={signInWithGoogle}>
+				<a href="/signin/" class="btn bg-orange-700 text-white hover:bg-orange-800 border-0">
 					Sign in to message
-				</button>
+				</a>
 				<a href={`/report/?type=listing&target=${listing.id}`} class="btn btn-sm btn-ghost text-stone-600">
 					🚩 Report
 				</a>
