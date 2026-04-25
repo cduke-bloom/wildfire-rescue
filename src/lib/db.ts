@@ -24,7 +24,8 @@ import type {
 	Message,
 	Report,
 	Thread,
-	County
+	County,
+	UserDoc
 } from '$lib/types';
 
 // Firestore rejects `undefined` — strip it from writes
@@ -366,6 +367,17 @@ export function subscribeReports(cb: (items: Report[]) => void): Unsubscribe {
 	const q = query(collection(db(), 'reports'), orderBy('createdAt', 'desc'), limit(200));
 	return onSnapshot(q, (snap) => {
 		cb(snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Report, 'id'>) })));
+	});
+}
+
+export function subscribeBannedUsers(cb: (users: UserDoc[]) => void): Unsubscribe {
+	const q = query(
+		collection(db(), 'users'),
+		where('banned', '==', true),
+		limit(200)
+	);
+	return onSnapshot(q, (snap) => {
+		cb(snap.docs.map((d) => d.data() as UserDoc));
 	});
 }
 

@@ -12,15 +12,18 @@
 		adminUnsuspendListing,
 		resolveReport,
 		subscribeAllListings,
+		subscribeBannedUsers,
 		subscribeReports
 	} from '$lib/db';
-	import { LISTING_TYPE_LABEL, type Listing, type Report } from '$lib/types';
+	import { LISTING_TYPE_LABEL, type Listing, type Report, type UserDoc } from '$lib/types';
 
 	let listings = $state<Listing[]>([]);
 	let reports = $state<Report[]>([]);
+	let banned = $state<UserDoc[]>([]);
 	let admins = $state<AdminEntry[]>([]);
 	let unsubL: (() => void) | null = null;
 	let unsubR: (() => void) | null = null;
+	let unsubB: (() => void) | null = null;
 
 	const isAdmin = $derived($authState.isAdmin);
 	const isSuperAdmin = $derived($authState.isSuperAdmin);
@@ -28,9 +31,11 @@
 	$effect(() => {
 		unsubL?.();
 		unsubR?.();
+		unsubB?.();
 		if (isAdmin) {
 			unsubL = subscribeAllListings((l) => (listings = l));
 			unsubR = subscribeReports((r) => (reports = r));
+			unsubB = subscribeBannedUsers((u) => (banned = u));
 		}
 	});
 
@@ -49,6 +54,7 @@
 	onDestroy(() => {
 		unsubL?.();
 		unsubR?.();
+		unsubB?.();
 	});
 
 	let newAdminEmail = $state('');
@@ -89,7 +95,9 @@
 	const openReports = $derived(reports.filter((r) => !r.resolved));
 	const resolvedReports = $derived(reports.filter((r) => r.resolved));
 
-	let view = $state<'pending' | 'reviews' | 'reports' | 'listings' | 'admins'>('pending');
+	let view = $state<'pending' | 'reviews' | 'reports' | 'listings' | 'banned' | 'admins'>(
+		'pending'
+	);
 
 	function adminInfo() {
 		return {
@@ -132,6 +140,11 @@
 		if (!reason) return;
 		await adminBanUser(l.ownerUid, reason, adminInfo());
 		alert(`${l.ownerName} has been banned. Consider also deleting their listings.`);
+	}
+
+	async function unban(u: UserDoc) {
+		if (!confirm(`Unban ${u.displayName}? They'll regain access immediately.`)) return;
+		await adminUnbanUser(u.uid);
 	}
 
 	async function suspend(l: Listing) {
@@ -197,6 +210,12 @@
 			onclick={() => (view = 'listings')}
 		>
 			All listings <span class="text-xs">({listings.length})</span>
+		</button>
+		<button
+			class="px-3 py-2 text-sm font-medium whitespace-nowrap {view === 'banned' ? 'border-b-2 border-orange-700 text-orange-800' : 'text-stone-600 hover:text-stone-900'}"
+			onclick={() => (view = 'banned')}
+		>
+			Banned users <span class="text-xs">({banned.length})</span>
 		</button>
 		{#if isSuperAdmin}
 			<button
@@ -333,6 +352,40 @@
 					{/each}
 				</ul>
 			</details>
+		{/if}
+	{:else if view === 'banned'}
+		{#if banned.length === 0}
+			<p class="mt-6 text-stone-600">No banned users.</p>
+		{:else}
+			<ul class="mt-4 space-y-2">
+				{#each banned as u (u.uid)}
+					<li class="bg-white rounded-xl border border-rose-300 p-4 shadow-sm">
+						<div class="flex justify-between items-start gap-3">
+							<div class="min-w-0">
+								<p class="font-semibold text-stone-900">{u.displayName}</p>
+								{#if u.email}
+									<p class="text-xs text-stone-500 truncate">{u.email}</p>
+								{/if}
+								<p class="text-xs text-stone-500">uid: <code>{u.uid.slice(0, 12)}…</code></p>
+								{#if u.bannedAt}
+									<p class="text-xs text-stone-500 mt-0.5">Banned {fmtDate(u.bannedAt)}</p>
+								{/if}
+							</div>
+							<button
+								class="btn btn-sm bg-emerald-600 text-white hover:bg-emerald-700 border-0 shrink-0"
+								onclick={() => unban(u)}
+							>
+								Unban
+							</button>
+						</div>
+						{#if u.bannedReason}
+							<div class="mt-3 bg-rose-50 border border-rose-200 rounded p-3 text-sm text-rose-900 whitespace-pre-line">
+								{u.bannedReason}
+							</div>
+						{/if}
+					</li>
+				{/each}
+			</ul>
 		{/if}
 	{:else if view === 'admins' && isSuperAdmin}
 		<div class="mt-4 bg-white rounded-2xl border border-stone-200 shadow-sm p-5">
