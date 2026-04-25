@@ -62,9 +62,9 @@
 					? { petsOk, kidsOk, maxPeople, durationDays }
 					: undefined,
 				items,
-				active: true
+				active: false
 			});
-			await goto(`/listing/${id}/`);
+			await goto(`/listing/${id}/?just_posted=1`);
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Could not save.';
 		} finally {

@@ -48,7 +48,18 @@ service cloud.firestore {
       allow update: if isAdmin()
                     || (isSignedIn()
                         && resource.data.ownerUid == request.auth.uid
-                        && request.resource.data.ownerUid == resource.data.ownerUid);
+                        && request.resource.data.ownerUid == resource.data.ownerUid
+                        // Owner cannot change moderation-controlled fields
+                        && !request.resource.data.diff(resource.data).affectedKeys()
+                            .hasAny(['suspended', 'suspendedAt', 'suspendedBy',
+                                     'suspendedReason', 'rejectionReason'])
+                        // Owner can only set approvalStatus to 'pending' (resubmit)
+                        && (!('approvalStatus' in request.resource.data
+                              .diff(resource.data).affectedKeys())
+                            || request.resource.data.approvalStatus == 'pending')
+                        // Owner cannot activate a listing that hasn't been approved
+                        && (request.resource.data.active == false
+                            || resource.data.get('approvalStatus', 'approved') == 'approved'));
 
       allow delete: if isAdmin()
                     || (isSignedIn() && resource.data.ownerUid == request.auth.uid);

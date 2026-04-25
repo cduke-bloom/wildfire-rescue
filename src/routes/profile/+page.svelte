@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { authState, updateProfile } from '$lib/stores/user';
-	import { getMyListings, requestListingReview, updateListing } from '$lib/db';
+	import { getMyListings, requestListingReview, resubmitForApproval, updateListing } from '$lib/db';
 	import { COUNTIES, LISTING_TYPE_LABEL, type County, type Listing } from '$lib/types';
 
 	let displayName = $state('');
@@ -62,6 +62,13 @@
 		alert('Review requested. A moderator will look at it soon.');
 	}
 
+	async function resubmit(l: Listing) {
+		if (!confirm(`Resubmit "${l.title}" for approval?`)) return;
+		await resubmitForApproval(l.id);
+		if ($authState.user) listings = await getMyListings($authState.user.uid);
+		alert('Resubmitted. A moderator will review it soon.');
+	}
+
 	function fmtDate(ts?: number) {
 		if (!ts) return '';
 		return new Date(ts).toLocaleString();
@@ -106,21 +113,47 @@
 	{:else}
 		<ul class="mt-3 space-y-3">
 			{#each listings as l (l.id)}
-				<li class="bg-white rounded-xl border p-4 {l.suspended ? 'border-rose-300' : 'border-stone-200'}">
+				{@const pending = l.approvalStatus === 'pending'}
+				{@const rejected = l.approvalStatus === 'rejected'}
+				{@const status = l.suspended
+					? '🚫 suspended by moderator'
+					: pending
+						? '⏳ awaiting approval'
+						: rejected
+							? '❌ not approved'
+							: l.active
+								? '✅ active'
+								: '💤 inactive'}
+				<li class="bg-white rounded-xl border p-4 {l.suspended || rejected ? 'border-rose-300' : pending ? 'border-amber-300' : 'border-stone-200'}">
 					<div class="flex justify-between items-start gap-3">
 						<div class="min-w-0">
 							<a href={`/listing/${l.id}/`} class="font-semibold text-stone-800 hover:underline">{l.title}</a>
 							<p class="text-xs text-stone-500 mt-0.5">
-								{LISTING_TYPE_LABEL[l.type]} · {l.county} County ·
-								{l.suspended ? '🚫 suspended by moderator' : l.active ? '✅ active' : '💤 inactive'}
+								{LISTING_TYPE_LABEL[l.type]} · {l.county} County · {status}
 							</p>
 						</div>
-						{#if !l.suspended}
+						{#if !l.suspended && !pending && !rejected}
 							<button class="btn btn-sm btn-outline shrink-0" onclick={() => toggleActive(l)}>
 								{l.active ? 'Deactivate' : 'Reactivate'}
 							</button>
 						{/if}
 					</div>
+
+					{#if pending}
+						<div class="mt-3 bg-amber-50 border border-amber-200 rounded p-3 text-sm">
+							A moderator will review this listing before it appears in Browse. You'll get a message in your inbox once it's approved.
+						</div>
+					{/if}
+
+					{#if rejected}
+						<div class="mt-3 bg-rose-50 border border-rose-200 rounded p-3 text-sm">
+							<p class="font-semibold text-rose-900">Not approved</p>
+							<p class="text-rose-800 mt-1">Reason: {l.rejectionReason ?? '(not provided)'}</p>
+						</div>
+						<button class="btn btn-sm btn-outline border-amber-500 text-amber-700 hover:bg-amber-50 mt-2" onclick={() => resubmit(l)}>
+							Resubmit for approval
+						</button>
+					{/if}
 
 					{#if l.suspended}
 						<div class="mt-3 bg-rose-50 border border-rose-200 rounded p-3 text-sm">

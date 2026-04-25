@@ -89,6 +89,16 @@
 {:else}
 	<a href="/browse/" class="text-sm text-orange-700 underline">← Back to browse</a>
 
+	{#if listing.approvalStatus === 'pending'}
+		<div class="mt-3 bg-amber-50 border border-amber-300 rounded-xl p-3 text-sm text-amber-900">
+			⏳ This listing is awaiting moderator approval. It will appear in Browse once approved.
+		</div>
+	{:else if listing.approvalStatus === 'rejected'}
+		<div class="mt-3 bg-rose-50 border border-rose-300 rounded-xl p-3 text-sm text-rose-900">
+			❌ This listing was not approved. {listing.rejectionReason ? `Reason: ${listing.rejectionReason}` : ''}
+		</div>
+	{/if}
+
 	<article class="mt-3 bg-white rounded-2xl shadow p-5 border border-stone-200">
 		<div class="flex items-center justify-between gap-2">
 			<span class="badge bg-orange-100 text-orange-800 border-0">{LISTING_TYPE_LABEL[listing.type]}</span>

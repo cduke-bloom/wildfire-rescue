@@ -65,6 +65,8 @@ export interface ShelterPrefs {
 	notes?: string;
 }
 
+export type ApprovalStatus = 'pending' | 'approved' | 'rejected';
+
 export interface Listing {
 	id: string;
 	ownerUid: string;
@@ -78,7 +80,10 @@ export interface Listing {
 	items?: string[];
 	active: boolean;
 	createdAt: number;
-	// Moderation state — set by admins
+	// Pre-publication approval — required before a listing goes live
+	approvalStatus?: ApprovalStatus;
+	rejectionReason?: string;
+	// Post-publication moderation
 	suspended?: boolean;
 	suspendedAt?: number;
 	suspendedBy?: string;

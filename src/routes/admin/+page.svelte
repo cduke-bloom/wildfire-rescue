@@ -3,6 +3,8 @@
 	import { authState } from '$lib/stores/user';
 	import { isAdminEmail } from '$lib/admin';
 	import {
+		adminApproveListing,
+		adminRejectListing,
 		adminSuspendListing,
 		adminUnsuspendListing,
 		resolveReport,
@@ -32,14 +34,34 @@
 		unsubR?.();
 	});
 
+	const pendingApproval = $derived(
+		listings.filter((l) => l.approvalStatus === 'pending')
+	);
 	const pendingReviews = $derived(
 		listings.filter((l) => l.suspended && l.reviewRequestedAt)
 	);
-	const suspendedListings = $derived(listings.filter((l) => l.suspended));
 	const openReports = $derived(reports.filter((r) => !r.resolved));
 	const resolvedReports = $derived(reports.filter((r) => r.resolved));
 
-	let view = $state<'reviews' | 'reports' | 'listings'>('reviews');
+	let view = $state<'pending' | 'reviews' | 'reports' | 'listings'>('pending');
+
+	function adminInfo() {
+		return {
+			uid: $authState.user!.uid,
+			name: $authState.profile?.displayName ?? 'Moderator'
+		};
+	}
+
+	async function approve(l: Listing) {
+		if (!confirm(`Approve "${l.title}"?\n\n${l.ownerName} will be notified and the listing will go live.`)) return;
+		await adminApproveListing(l.id, adminInfo());
+	}
+
+	async function reject(l: Listing) {
+		const reason = prompt(`Reject "${l.title}"?\n\nReason (will be sent to ${l.ownerName}):`);
+		if (!reason) return;
+		await adminRejectListing(l.id, reason, adminInfo());
+	}
 
 	async function suspend(l: Listing) {
 		const reason = prompt(`Suspend "${l.title}"?\n\nReason (shown to owner):`);
@@ -75,28 +97,76 @@
 {:else}
 	<h1 class="text-2xl font-bold text-orange-800">Admin</h1>
 
-	<div class="mt-4 flex gap-2 border-b border-stone-200">
+	<div class="mt-4 flex gap-2 border-b border-stone-200 overflow-x-auto">
 		<button
-			class="px-4 py-2 text-sm font-medium {view === 'reviews' ? 'border-b-2 border-orange-700 text-orange-800' : 'text-stone-600 hover:text-stone-900'}"
+			class="px-3 py-2 text-sm font-medium whitespace-nowrap {view === 'pending' ? 'border-b-2 border-orange-700 text-orange-800' : 'text-stone-600 hover:text-stone-900'}"
+			onclick={() => (view = 'pending')}
+		>
+			Awaiting approval
+			{#if pendingApproval.length > 0}
+				<span class="ml-1 bg-amber-500 text-white text-[10px] font-bold rounded-full px-1.5 py-0.5">
+					{pendingApproval.length}
+				</span>
+			{/if}
+		</button>
+		<button
+			class="px-3 py-2 text-sm font-medium whitespace-nowrap {view === 'reviews' ? 'border-b-2 border-orange-700 text-orange-800' : 'text-stone-600 hover:text-stone-900'}"
 			onclick={() => (view = 'reviews')}
 		>
 			Review requests <span class="text-xs">({pendingReviews.length})</span>
 		</button>
 		<button
-			class="px-4 py-2 text-sm font-medium {view === 'reports' ? 'border-b-2 border-orange-700 text-orange-800' : 'text-stone-600 hover:text-stone-900'}"
+			class="px-3 py-2 text-sm font-medium whitespace-nowrap {view === 'reports' ? 'border-b-2 border-orange-700 text-orange-800' : 'text-stone-600 hover:text-stone-900'}"
 			onclick={() => (view = 'reports')}
 		>
-			Open reports <span class="text-xs">({openReports.length})</span>
+			Reports <span class="text-xs">({openReports.length})</span>
 		</button>
 		<button
-			class="px-4 py-2 text-sm font-medium {view === 'listings' ? 'border-b-2 border-orange-700 text-orange-800' : 'text-stone-600 hover:text-stone-900'}"
+			class="px-3 py-2 text-sm font-medium whitespace-nowrap {view === 'listings' ? 'border-b-2 border-orange-700 text-orange-800' : 'text-stone-600 hover:text-stone-900'}"
 			onclick={() => (view = 'listings')}
 		>
 			All listings <span class="text-xs">({listings.length})</span>
 		</button>
 	</div>
 
-	{#if view === 'reviews'}
+	{#if view === 'pending'}
+		{#if pendingApproval.length === 0}
+			<p class="mt-6 text-stone-600">Inbox zero — no listings awaiting approval.</p>
+		{:else}
+			<ul class="mt-4 space-y-3">
+				{#each pendingApproval as l (l.id)}
+					<li class="bg-white rounded-xl border border-amber-300 p-4 shadow-sm">
+						<div class="flex justify-between gap-2 items-start">
+							<div class="min-w-0">
+								<a href={`/listing/${l.id}/`} target="_blank" class="font-semibold text-stone-900 hover:underline">
+									{l.title}
+								</a>
+								<p class="text-xs text-stone-500 mt-0.5">
+									{LISTING_TYPE_LABEL[l.type]} · {l.county} County · by {l.ownerName} · {fmtDate(l.createdAt)}
+								</p>
+							</div>
+						</div>
+						<p class="mt-3 text-sm text-stone-800 whitespace-pre-line line-clamp-6">{l.details}</p>
+						{#if l.items?.length}
+							<div class="mt-2 flex flex-wrap gap-1">
+								{#each l.items.slice(0, 8) as item}
+									<span class="badge bg-stone-100 border-0 text-xs">{item}</span>
+								{/each}
+							</div>
+						{/if}
+						<div class="mt-4 flex gap-2">
+							<button class="btn btn-sm bg-emerald-600 text-white hover:bg-emerald-700 border-0" onclick={() => approve(l)}>
+								✅ Approve & publish
+							</button>
+							<button class="btn btn-sm btn-outline border-rose-400 text-rose-700 hover:bg-rose-50" onclick={() => reject(l)}>
+								❌ Reject
+							</button>
+						</div>
+					</li>
+				{/each}
+			</ul>
+		{/if}
+	{:else if view === 'reviews'}
 		{#if pendingReviews.length === 0}
 			<p class="mt-6 text-stone-600">No pending review requests.</p>
 		{:else}

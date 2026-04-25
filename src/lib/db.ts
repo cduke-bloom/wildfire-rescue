@@ -42,10 +42,20 @@ export async function createListing(
 ): Promise<string> {
 	const ref = await addDoc(collection(db(), 'listings'), {
 		...clean(listing),
+		// Override: every new listing starts inactive + pending until admin approves
+		active: false,
+		approvalStatus: 'pending',
 		createdAt: Date.now(),
 		createdAtServer: serverTimestamp()
 	});
 	return ref.id;
+}
+
+export async function resubmitForApproval(id: string) {
+	await updateDoc(doc(db(), 'listings', id), {
+		approvalStatus: 'pending',
+		rejectionReason: deleteField()
+	});
 }
 
 export async function updateListing(id: string, patch: Partial<Listing>) {
@@ -189,6 +199,56 @@ export async function blockUid(myUid: string, targetUid: string) {
 }
 
 // ---------- Admin actions ----------
+
+export async function adminApproveListing(
+	id: string,
+	admin: { uid: string; name: string }
+) {
+	const listing = await getListing(id);
+	if (!listing) return;
+	await updateDoc(doc(db(), 'listings', id), {
+		active: true,
+		approvalStatus: 'approved',
+		rejectionReason: deleteField()
+	});
+	await notifyOwner(
+		admin,
+		listing.ownerUid,
+		listing.ownerName,
+		`✅ Your listing "${listing.title}" has been approved and is now live on Brantley Wildfire Rescue.\n\nAnyone browsing will be able to see it and message you.`
+	);
+}
+
+export async function adminRejectListing(
+	id: string,
+	reason: string,
+	admin: { uid: string; name: string }
+) {
+	const listing = await getListing(id);
+	if (!listing) return;
+	await updateDoc(doc(db(), 'listings', id), {
+		active: false,
+		approvalStatus: 'rejected',
+		rejectionReason: reason
+	});
+	await notifyOwner(
+		admin,
+		listing.ownerUid,
+		listing.ownerName,
+		`❌ Your listing "${listing.title}" was not approved.\n\nReason: ${reason}\n\nYou can edit it and click "Resubmit for approval" on your profile, or reply here if you have questions.`
+	);
+}
+
+async function notifyOwner(
+	admin: { uid: string; name: string },
+	ownerUid: string,
+	ownerName: string,
+	text: string
+) {
+	if (admin.uid === ownerUid) return; // admin acted on their own listing — skip notify
+	const threadId = await openOrCreateThread(admin, { uid: ownerUid, name: ownerName });
+	await sendMessage(threadId, admin.uid, text);
+}
 
 export async function adminSuspendListing(
 	id: string,
