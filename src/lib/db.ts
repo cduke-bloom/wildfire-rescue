@@ -268,6 +268,16 @@ export async function adminRejectListing(
 	);
 }
 
+// Admin-notification threads always carry this display name and synthetic
+// listing context so they're separate from any regular conversation the
+// real admin might be having with the owner, and so the admin's personal
+// name never appears in moderation messages.
+const ADMIN_DISPLAY_NAME = 'Brantley Wildfire Rescue Team';
+const ADMIN_THREAD_CONTEXT = {
+	id: '__admin__',
+	title: 'Brantley Wildfire Rescue Team'
+};
+
 async function notifyOwner(
 	admin: { uid: string; name: string },
 	ownerUid: string,
@@ -275,8 +285,28 @@ async function notifyOwner(
 	text: string
 ) {
 	if (admin.uid === ownerUid) return; // admin acted on their own listing — skip notify
-	const threadId = await openOrCreateThread(admin, { uid: ownerUid, name: ownerName });
+	const threadId = await openOrCreateThread(
+		{ uid: admin.uid, name: ADMIN_DISPLAY_NAME },
+		{ uid: ownerUid, name: ownerName },
+		ADMIN_THREAD_CONTEXT
+	);
 	await sendMessage(threadId, admin.uid, text);
+}
+
+export async function adminAskForDetails(
+	id: string,
+	message: string,
+	admin: { uid: string; name: string }
+) {
+	const listing = await getListing(id);
+	if (!listing) return;
+	const firstName = listing.ownerName.split(' ')[0] || listing.ownerName;
+	await notifyOwner(
+		admin,
+		listing.ownerUid,
+		listing.ownerName,
+		`Hi ${firstName} — your listing "${listing.title}" needs a bit more information before we can approve it.\n\n${message}\n\nPlease open your profile and click Edit on this listing to add the missing details. As soon as you save, we'll review it again.`
+	);
 }
 
 export async function adminBanUser(

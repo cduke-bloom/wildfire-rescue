@@ -4,6 +4,7 @@
 	import { addAdmin, listAdmins, removeAdmin, type AdminEntry } from '$lib/admin';
 	import {
 		adminApproveListing,
+		adminAskForDetails,
 		adminBanUser,
 		adminDeleteListing,
 		adminRejectListing,
@@ -115,6 +116,15 @@
 		const reason = prompt(`Reject "${l.title}"?\n\nReason (will be sent to ${l.ownerName}):`);
 		if (!reason) return;
 		await adminRejectListing(l.id, reason, adminInfo());
+	}
+
+	async function askForMore(l: Listing) {
+		const message = prompt(
+			`Ask ${l.ownerName} for more info on "${l.title}".\n\nWhat's missing? (sent as a message; the listing stays in the queue):`
+		);
+		if (!message) return;
+		await adminAskForDetails(l.id, message, adminInfo());
+		alert('Message sent. The listing stays in the queue. The owner can edit and resave to bump it back to you.');
 	}
 
 	async function remove(l: Listing) {
@@ -252,9 +262,12 @@
 								{/each}
 							</div>
 						{/if}
-						<div class="mt-4 flex gap-2">
+						<div class="mt-4 flex gap-2 flex-wrap">
 							<button class="btn btn-sm bg-emerald-600 text-white hover:bg-emerald-700 border-0" onclick={() => approve(l)}>
 								✅ Approve & publish
+							</button>
+							<button class="btn btn-sm btn-outline border-amber-500 text-amber-800 hover:bg-amber-50" onclick={() => askForMore(l)}>
+								💬 Ask for more info
 							</button>
 							<button class="btn btn-sm btn-outline border-rose-400 text-rose-700 hover:bg-rose-50" onclick={() => reject(l)}>
 								❌ Reject
