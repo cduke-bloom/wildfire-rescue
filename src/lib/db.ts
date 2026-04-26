@@ -411,6 +411,13 @@ export function subscribeBannedUsers(cb: (users: UserDoc[]) => void): Unsubscrib
 	});
 }
 
+export function subscribeAllUsers(cb: (users: UserDoc[]) => void): Unsubscribe {
+	const q = query(collection(db(), 'users'), orderBy('createdAt', 'desc'), limit(500));
+	return onSnapshot(q, (snap) => {
+		cb(snap.docs.map((d) => d.data() as UserDoc));
+	});
+}
+
 export async function resolveReport(id: string, adminUid: string, note?: string) {
 	await updateDoc(doc(db(), 'reports', id), {
 		resolved: true,

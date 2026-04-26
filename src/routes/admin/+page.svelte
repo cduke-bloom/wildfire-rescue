@@ -13,18 +13,21 @@
 		adminUnsuspendListing,
 		resolveReport,
 		subscribeAllListings,
+		subscribeAllUsers,
 		subscribeBannedUsers,
 		subscribeReports
 	} from '$lib/db';
-	import { LISTING_TYPE_LABEL, type Listing, type Report, type UserDoc } from '$lib/types';
+	import { COUNTIES, LISTING_TYPE_LABEL, type Listing, type Report, type UserDoc } from '$lib/types';
 
 	let listings = $state<Listing[]>([]);
 	let reports = $state<Report[]>([]);
 	let banned = $state<UserDoc[]>([]);
+	let users = $state<UserDoc[]>([]);
 	let admins = $state<AdminEntry[]>([]);
 	let unsubL: (() => void) | null = null;
 	let unsubR: (() => void) | null = null;
 	let unsubB: (() => void) | null = null;
+	let unsubU: (() => void) | null = null;
 
 	const isAdmin = $derived($authState.isAdmin);
 	const isSuperAdmin = $derived($authState.isSuperAdmin);
@@ -33,10 +36,12 @@
 		unsubL?.();
 		unsubR?.();
 		unsubB?.();
+		unsubU?.();
 		if (isAdmin) {
 			unsubL = subscribeAllListings((l) => (listings = l));
 			unsubR = subscribeReports((r) => (reports = r));
 			unsubB = subscribeBannedUsers((u) => (banned = u));
+			unsubU = subscribeAllUsers((u) => (users = u));
 		}
 	});
 
@@ -56,6 +61,34 @@
 		unsubL?.();
 		unsubR?.();
 		unsubB?.();
+		unsubU?.();
+	});
+
+	const usersByCounty = $derived.by(() => {
+		const map: Record<string, number> = { Unset: 0 };
+		for (const c of COUNTIES) map[c] = 0;
+		for (const u of users) {
+			if (u.county && u.county in map) map[u.county]++;
+			else map['Unset']++;
+		}
+		return map;
+	});
+
+	const newThisWeek = $derived(
+		users.filter((u) => Date.now() - u.createdAt < 7 * 86400000).length
+	);
+	const signedWaiver = $derived(users.filter((u) => !!u.waiverSignedAt).length);
+
+	let userQuery = $state('');
+	const filteredUsers = $derived.by(() => {
+		const q = userQuery.trim().toLowerCase();
+		if (!q) return users;
+		return users.filter(
+			(u) =>
+				u.displayName.toLowerCase().includes(q) ||
+				(u.email ?? '').toLowerCase().includes(q) ||
+				(u.county ?? '').toLowerCase().includes(q)
+		);
 	});
 
 	let newAdminEmail = $state('');
@@ -96,9 +129,9 @@
 	const openReports = $derived(reports.filter((r) => !r.resolved));
 	const resolvedReports = $derived(reports.filter((r) => r.resolved));
 
-	let view = $state<'pending' | 'reviews' | 'reports' | 'listings' | 'banned' | 'admins'>(
-		'pending'
-	);
+	let view = $state<
+		'pending' | 'reviews' | 'reports' | 'listings' | 'users' | 'banned' | 'admins'
+	>('pending');
 
 	function adminInfo() {
 		return {
@@ -220,6 +253,12 @@
 			onclick={() => (view = 'listings')}
 		>
 			All listings <span class="text-xs">({listings.length})</span>
+		</button>
+		<button
+			class="px-3 py-2 text-sm font-medium whitespace-nowrap {view === 'users' ? 'border-b-2 border-orange-700 text-orange-800' : 'text-stone-600 hover:text-stone-900'}"
+			onclick={() => (view = 'users')}
+		>
+			Users <span class="text-xs">({users.length})</span>
 		</button>
 		<button
 			class="px-3 py-2 text-sm font-medium whitespace-nowrap {view === 'banned' ? 'border-b-2 border-orange-700 text-orange-800' : 'text-stone-600 hover:text-stone-900'}"
@@ -365,6 +404,62 @@
 					{/each}
 				</ul>
 			</details>
+		{/if}
+	{:else if view === 'users'}
+		<div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+			<div class="bg-white rounded-xl border border-stone-200 p-3">
+				<p class="text-xs uppercase text-stone-500 tracking-wide">Total signed up</p>
+				<p class="text-2xl font-bold text-stone-900 mt-1">{users.length}</p>
+			</div>
+			<div class="bg-white rounded-xl border border-stone-200 p-3">
+				<p class="text-xs uppercase text-stone-500 tracking-wide">New this week</p>
+				<p class="text-2xl font-bold text-emerald-700 mt-1">{newThisWeek}</p>
+			</div>
+			<div class="bg-white rounded-xl border border-stone-200 p-3">
+				<p class="text-xs uppercase text-stone-500 tracking-wide">Signed waiver</p>
+				<p class="text-2xl font-bold text-stone-900 mt-1">{signedWaiver}<span class="text-sm text-stone-500"> / {users.length}</span></p>
+			</div>
+			<div class="bg-white rounded-xl border border-rose-200 p-3">
+				<p class="text-xs uppercase text-stone-500 tracking-wide">Banned</p>
+				<p class="text-2xl font-bold text-rose-700 mt-1">{banned.length}</p>
+			</div>
+		</div>
+
+		<div class="mt-3 bg-white rounded-xl border border-stone-200 p-3 flex flex-wrap gap-3 text-sm">
+			<span class="text-xs uppercase text-stone-500 tracking-wide self-center">By county:</span>
+			{#each Object.entries(usersByCounty) as [county, count]}
+				<span class="text-stone-700"><strong>{county}</strong>: {count}</span>
+			{/each}
+		</div>
+
+		<div class="mt-4">
+			<input
+				bind:value={userQuery}
+				type="search"
+				placeholder="Search by name, email, or county…"
+				class="input input-bordered w-full bg-white"
+			/>
+		</div>
+
+		{#if filteredUsers.length === 0}
+			<p class="mt-6 text-stone-600">No users match.</p>
+		{:else}
+			<ul class="mt-3 space-y-1">
+				{#each filteredUsers as u (u.uid)}
+					<li class="bg-white rounded-lg border p-3 flex flex-wrap items-center justify-between gap-2 {u.banned ? 'border-rose-300' : 'border-stone-200'}">
+						<div class="min-w-0 flex-1">
+							<p class="font-semibold text-stone-900 truncate">
+								{u.displayName}
+								{#if u.banned}<span class="ml-2 badge bg-rose-100 text-rose-800 border-0">banned</span>{/if}
+								{#if !u.waiverSignedAt}<span class="ml-2 badge bg-amber-100 text-amber-900 border-0">no waiver</span>{/if}
+							</p>
+							<p class="text-xs text-stone-500 truncate">
+								{u.email ?? '(no email)'}{u.county ? ` · ${u.county} County` : ''} · joined {fmtDate(u.createdAt)}
+							</p>
+						</div>
+					</li>
+				{/each}
+			</ul>
 		{/if}
 	{:else if view === 'banned'}
 		{#if banned.length === 0}
