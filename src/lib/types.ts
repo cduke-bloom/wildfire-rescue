@@ -124,12 +124,22 @@ export interface Thread {
 	lastSender?: string;
 	updatedAt: number;
 	readAt?: Record<string, number>;
+	// Per-user hide state. If hiddenBy[uid] is set, the thread is hidden
+	// from that user's Messages list until updatedAt exceeds the hide
+	// timestamp (i.e. someone sends a new message in it).
+	hiddenBy?: Record<string, number>;
 }
 
 export function isThreadUnread(t: Thread, uid: string): boolean {
 	if (!t.lastSender || t.lastSender === uid) return false;
 	const seen = t.readAt?.[uid] ?? 0;
 	return t.updatedAt > seen;
+}
+
+export function isThreadVisible(t: Thread, uid: string): boolean {
+	const hidden = t.hiddenBy?.[uid];
+	if (!hidden) return true;
+	return t.updatedAt > hidden;
 }
 
 export interface Message {

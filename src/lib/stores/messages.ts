@@ -1,7 +1,7 @@
 import { writable, derived, type Readable } from 'svelte/store';
 import { authState } from '$lib/stores/user';
 import { subscribeMyThreads } from '$lib/db';
-import { isThreadUnread, type Thread } from '$lib/types';
+import { isThreadUnread, isThreadVisible, type Thread } from '$lib/types';
 
 export const myThreads = writable<Thread[]>([]);
 
@@ -28,6 +28,8 @@ export const unreadCount: Readable<number> = derived(
 	([$threads, $auth]) => {
 		const uid = $auth.user?.uid;
 		if (!uid) return 0;
-		return $threads.filter((t) => isThreadUnread(t, uid)).length;
+		return $threads.filter(
+			(t) => isThreadVisible(t, uid) && isThreadUnread(t, uid)
+		).length;
 	}
 );

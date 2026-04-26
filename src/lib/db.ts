@@ -194,6 +194,12 @@ export async function markThreadRead(threadId: string, uid: string) {
 	});
 }
 
+export async function hideThread(threadId: string, uid: string) {
+	await updateDoc(doc(db(), 'threads', threadId), {
+		[`hiddenBy.${uid}`]: Date.now()
+	});
+}
+
 export async function sendMessage(
 	threadId: string,
 	sender: string,

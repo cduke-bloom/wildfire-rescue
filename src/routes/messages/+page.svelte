@@ -2,10 +2,23 @@
 	import { goto } from '$app/navigation';
 	import { authState } from '$lib/stores/user';
 	import { myThreads } from '$lib/stores/messages';
-	import { ensureSupportThread } from '$lib/db';
-	import { isThreadUnread, type Thread } from '$lib/types';
+	import { ensureSupportThread, hideThread } from '$lib/db';
+	import { isThreadUnread, isThreadVisible, type Thread } from '$lib/types';
 
-	const threads = $derived($myThreads);
+	const visibleThreads = $derived.by(() => {
+		const uid = $authState.user?.uid;
+		if (!uid) return [];
+		return $myThreads.filter((t) => isThreadVisible(t, uid));
+	});
+
+	async function hide(e: MouseEvent, t: Thread) {
+		e.preventDefault();
+		e.stopPropagation();
+		if (!$authState.user) return;
+		if (!confirm('Hide this conversation?\n\nIt will reappear if the other person messages you again.'))
+			return;
+		await hideThread(t.id, $authState.user.uid);
+	}
 
 	let contacting = $state(false);
 	let contactError = $state('');
@@ -68,17 +81,17 @@
 		<p class="mt-2 text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded p-2">{contactError}</p>
 	{/if}
 
-	{#if threads.length === 0}
+	{#if visibleThreads.length === 0}
 		<p class="mt-6 text-stone-600">No conversations yet. Message someone from their listing — or message the moderators above — to get started.</p>
 	{:else}
 	<ul class="mt-4 space-y-2">
-		{#each threads as t (t.id)}
+		{#each visibleThreads as t (t.id)}
 			{@const o = other(t)}
 			{@const unread = $authState.user ? isThreadUnread(t, $authState.user.uid) : false}
-			<li>
+			<li class="relative">
 				<a
 					href={`/messages/${t.id}/`}
-					class="block bg-white rounded-xl border shadow-sm p-4 hover:shadow-md {unread ? 'border-orange-400 ring-1 ring-orange-200' : 'border-stone-200'}"
+					class="block bg-white rounded-xl border shadow-sm p-4 pr-12 hover:shadow-md {unread ? 'border-orange-400 ring-1 ring-orange-200' : 'border-stone-200'}"
 				>
 					<div class="flex justify-between items-baseline gap-2">
 						<p class="font-semibold text-stone-800 flex items-center gap-2">
@@ -98,6 +111,17 @@
 						</p>
 					{/if}
 				</a>
+				<button
+					type="button"
+					onclick={(e) => hide(e, t)}
+					aria-label="Hide conversation"
+					title="Hide this conversation"
+					class="absolute top-3 right-3 p-1.5 rounded-md text-stone-400 hover:text-rose-700 hover:bg-rose-50"
+				>
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" />
+					</svg>
+				</button>
 			</li>
 		{/each}
 		</ul>
