@@ -27,6 +27,7 @@ import type {
 	County,
 	UserDoc
 } from '$lib/types';
+import { SUPER_ADMIN_EMAILS } from '$lib/admin';
 
 // Firestore rejects `undefined` — strip it from writes
 function clean<T extends Record<string, unknown>>(obj: T): Partial<T> {
@@ -291,6 +292,41 @@ async function notifyOwner(
 		ADMIN_THREAD_CONTEXT
 	);
 	await sendMessage(threadId, admin.uid, text);
+}
+
+// Find a super-admin's uid so users can open a support thread.
+// Falls back through the SUPER_ADMIN_EMAILS list in order.
+async function findSupportAdminUid(): Promise<string | null> {
+	for (const email of SUPER_ADMIN_EMAILS) {
+		const q = query(
+			collection(db(), 'users'),
+			where('email', '==', email),
+			limit(1)
+		);
+		const snap = await getDocs(q);
+		if (!snap.empty) return snap.docs[0].id;
+	}
+	return null;
+}
+
+// User-initiated thread to moderators. Reuses the synthetic admin
+// context so the same thread is used whether moderators contacted
+// the user first or vice-versa.
+export async function ensureSupportThread(user: {
+	uid: string;
+	name: string;
+}): Promise<string> {
+	const supportUid = await findSupportAdminUid();
+	if (!supportUid) {
+		throw new Error(
+			'Moderator account isn\'t set up yet. Please try again in a few minutes.'
+		);
+	}
+	return openOrCreateThread(
+		user,
+		{ uid: supportUid, name: ADMIN_DISPLAY_NAME },
+		ADMIN_THREAD_CONTEXT
+	);
 }
 
 export async function adminAskForDetails(

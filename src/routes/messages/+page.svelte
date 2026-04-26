@@ -1,9 +1,31 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { authState } from '$lib/stores/user';
 	import { myThreads } from '$lib/stores/messages';
+	import { ensureSupportThread } from '$lib/db';
 	import { isThreadUnread, type Thread } from '$lib/types';
 
 	const threads = $derived($myThreads);
+
+	let contacting = $state(false);
+	let contactError = $state('');
+
+	async function contactAdmin() {
+		if (!$authState.user || !$authState.profile) return;
+		contacting = true;
+		contactError = '';
+		try {
+			const threadId = await ensureSupportThread({
+				uid: $authState.user.uid,
+				name: $authState.profile.displayName
+			});
+			await goto(`/messages/${threadId}/`);
+		} catch (e) {
+			contactError = e instanceof Error ? e.message : 'Could not open the moderator thread.';
+		} finally {
+			contacting = false;
+		}
+	}
 
 	function other(t: Thread): { uid: string; name: string } {
 		const myUid = $authState.user?.uid;
@@ -26,9 +48,29 @@
 	<p class="mt-4 text-stone-600">Loading…</p>
 {:else if !$authState.user}
 	<p class="mt-4 text-stone-600">Sign in to see your messages.</p>
-{:else if threads.length === 0}
-	<p class="mt-6 text-stone-600">No conversations yet. Message someone from their listing to get started.</p>
 {:else}
+	<div class="mt-4 bg-orange-50 border border-orange-200 rounded-xl p-4 flex flex-wrap items-center justify-between gap-3">
+		<div class="min-w-0">
+			<p class="font-semibold text-orange-900">Need to reach the moderators?</p>
+			<p class="text-sm text-stone-700 mt-0.5">
+				Question, concern, or something to flag? Message the Wildfire Rescue Team directly.
+			</p>
+		</div>
+		<button
+			class="btn bg-orange-700 text-white hover:bg-orange-800 border-0 shrink-0"
+			onclick={contactAdmin}
+			disabled={contacting}
+		>
+			{contacting ? 'Opening…' : '💬 Message moderators'}
+		</button>
+	</div>
+	{#if contactError}
+		<p class="mt-2 text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded p-2">{contactError}</p>
+	{/if}
+
+	{#if threads.length === 0}
+		<p class="mt-6 text-stone-600">No conversations yet. Message someone from their listing — or message the moderators above — to get started.</p>
+	{:else}
 	<ul class="mt-4 space-y-2">
 		{#each threads as t (t.id)}
 			{@const o = other(t)}
@@ -58,5 +100,6 @@
 				</a>
 			</li>
 		{/each}
-	</ul>
+		</ul>
+	{/if}
 {/if}
