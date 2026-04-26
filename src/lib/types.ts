@@ -45,6 +45,8 @@ export const BROWSE_FILTER: Record<
 	}
 };
 
+export const WAIVER_VERSION = '2026-04-26';
+
 export interface UserDoc {
 	uid: string;
 	displayName: string;
@@ -53,6 +55,11 @@ export interface UserDoc {
 	county?: County;
 	bio?: string;
 	acceptedTosAt?: number;
+	// Electronic signature on the Waiver of Liability and Assumption of Risk.
+	// Stored together so we have a defensible record of consent.
+	waiverSignedAt?: number;
+	waiverSignedName?: string;
+	waiverVersion?: string;
 	blocked?: string[];
 	createdAt: number;
 	// Set by admin when this user violates the rules.

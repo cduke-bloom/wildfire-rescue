@@ -1,5 +1,6 @@
 <script lang="ts">
 	import RulesContent from '$lib/components/RulesContent.svelte';
+	import WaiverContent from '$lib/components/WaiverContent.svelte';
 </script>
 
 <h1 class="text-2xl font-bold text-orange-800">About & Community Rules</h1>
@@ -43,5 +44,15 @@
 	<p class="text-sm text-stone-600 mt-1">By using this platform you agree to follow these rules. Listings and accounts that violate them may be suspended or banned.</p>
 	<div class="mt-4">
 		<RulesContent />
+	</div>
+</section>
+
+<section class="mt-6 bg-white rounded-2xl shadow border border-rose-200 p-6">
+	<h2 class="text-xl font-bold text-rose-800">Waiver of Liability and Assumption of Risk</h2>
+	<p class="text-sm text-stone-600 mt-1">
+		Every user is required to electronically sign this waiver before posting or messaging.
+	</p>
+	<div class="mt-4">
+		<WaiverContent />
 	</div>
 </section>

@@ -27,7 +27,9 @@
 	const nav = $derived($authState.isAdmin ? [...baseNav, adminLink] : baseNav);
 
 	const showTos = $derived(
-		!!$authState.user && !!$authState.profile && !$authState.profile.acceptedTosAt
+		!!$authState.user
+			&& !!$authState.profile
+			&& (!$authState.profile.acceptedTosAt || !$authState.profile.waiverSignedAt)
 	);
 </script>
 

@@ -14,7 +14,7 @@ import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { browser } from '$app/environment';
 import { auth, db } from '$lib/firebase';
 import { checkIsAdmin, isSuperAdminEmail } from '$lib/admin';
-import type { UserDoc } from '$lib/types';
+import { WAIVER_VERSION, type UserDoc } from '$lib/types';
 
 export interface AuthState {
 	ready: boolean;
@@ -113,6 +113,18 @@ export async function acceptTos(uid: string) {
 	authState.update((s) =>
 		s.profile ? { ...s, profile: { ...s.profile, acceptedTosAt: Date.now() } } : s
 	);
+}
+
+export async function acceptTosAndSignWaiver(uid: string, signedName: string) {
+	const now = Date.now();
+	const patch = {
+		acceptedTosAt: now,
+		waiverSignedAt: now,
+		waiverSignedName: signedName,
+		waiverVersion: WAIVER_VERSION
+	};
+	await setDoc(doc(db(), 'users', uid), patch, { merge: true });
+	authState.update((s) => (s.profile ? { ...s, profile: { ...s.profile, ...patch } } : s));
 }
 
 export async function updateProfile(uid: string, patch: Partial<UserDoc>) {
