@@ -34,6 +34,12 @@
 </script>
 
 <div class="min-h-screen flex flex-col">
+	<div class="bg-stone-900 text-stone-200 text-xs">
+		<div class="max-w-5xl mx-auto px-4 py-1.5 flex justify-end">
+			<span>Sponsored by <span class="font-semibold text-white">ICA Enterprise</span></span>
+		</div>
+	</div>
+
 	<header class="bg-orange-700 text-white shadow-md sticky top-0 z-40">
 		<div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
 			<a href="/" class="flex items-center gap-2 font-bold text-lg">
