@@ -8,9 +8,10 @@
 <section class="prose prose-stone max-w-none mt-4 bg-white rounded-2xl shadow border border-stone-200 p-6">
 	<h2>What this is</h2>
 	<p>
-		<strong>Brantley Wildfire Rescue</strong> is a volunteer-built community board for neighbors in
-		Brantley, Glynn, Camden, and Wayne counties, Georgia, affected by the wildfire. People who are
-		displaced can post what they need, and people who want to help can offer a spare room or supplies.
+		<strong>Southeast Georgia Wildfire Rescue</strong> is a volunteer-built community board for
+		neighbors in Brantley, Glynn, Camden, Wayne, and surrounding counties, Georgia, affected by the
+		wildfire that began in Brantley County. People who are displaced can post what they need, and
+		people who want to help can offer a spare room or supplies.
 		<strong>There are no money transactions, ever.</strong>
 	</p>
 

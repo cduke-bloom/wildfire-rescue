@@ -1,6 +1,8 @@
-# Brantley Wildfire Rescue
+# Southeast Georgia Wildfire Rescue
 
-A free community board connecting neighbors displaced by wildfire in Brantley, Glynn, and Camden counties, Georgia. Hosts offer spare rooms or supplies; those in need post requests; both sides connect through built-in chat. No money, no middlemen.
+A free community board connecting neighbors displaced by wildfire in Brantley, Glynn, Camden, Wayne, and surrounding counties, Georgia. Hosts offer spare rooms or supplies; those in need post requests; both sides connect through built-in chat. No money, no middlemen.
+
+The site originated for the wildfire that began in Brantley County in early 2026.
 
 ## Tech
 

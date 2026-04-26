@@ -36,7 +36,7 @@
 	<ul>
 		<li>
 			<strong class="text-rose-900">Only request help if you've been affected by the wildfire.</strong>
-			This board exists for people directly displaced or harmed by the Brantley County wildfire.
+			This board exists for people directly displaced or harmed by the wildfire that began in Brantley County and has spread across southeast Georgia.
 			You will be asked to certify this when posting a "need" listing. Submitting false information
 			will result in your account being <strong>permanently banned</strong> and your listings removed.
 		</li>
@@ -50,7 +50,7 @@
 
 	<h2 class={compact ? 'text-base font-bold text-rose-800 mt-4' : 'text-rose-800'}>You are on your own — read carefully</h2>
 	<p>
-		<strong>Brantley Wildfire Rescue is a community connector, not a vetting service.</strong>
+		<strong>Southeast Georgia Wildfire Rescue is a community connector, not a vetting service.</strong>
 		By using this platform, you accept the following:
 	</p>
 	<ul>

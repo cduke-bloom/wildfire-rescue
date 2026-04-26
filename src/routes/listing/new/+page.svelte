@@ -195,11 +195,11 @@
 				<input type="checkbox" bind:checked={affectedAttestation} class="checkbox mt-0.5" />
 				<span class="text-sm text-stone-900">
 					<strong class="text-rose-900">I certify that I or my household have been directly affected</strong>
-					by the Brantley County wildfire — for example, evacuated, lost a home, lost belongings,
+					by the wildfire — for example, evacuated, lost a home, lost belongings,
 					or otherwise displaced by the fire.
 					<br /><br />
 					I understand that submitting false information will result in my account being
-					<strong>permanently banned</strong> from Brantley Wildfire Rescue and my listing removed.
+					<strong>permanently banned</strong> from Southeast Georgia Wildfire Rescue and my listing removed.
 				</span>
 			</label>
 		{/if}

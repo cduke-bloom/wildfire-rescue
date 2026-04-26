@@ -244,7 +244,7 @@ export async function adminApproveListing(
 		admin,
 		listing.ownerUid,
 		listing.ownerName,
-		`✅ Your listing "${listing.title}" has been approved and is now live on Brantley Wildfire Rescue.\n\nAnyone browsing will be able to see it and message you.`
+		`✅ Your listing "${listing.title}" has been approved and is now live on Southeast Georgia Wildfire Rescue.\n\nAnyone browsing will be able to see it and message you.`
 	);
 }
 
@@ -272,10 +272,10 @@ export async function adminRejectListing(
 // listing context so they're separate from any regular conversation the
 // real admin might be having with the owner, and so the admin's personal
 // name never appears in moderation messages.
-const ADMIN_DISPLAY_NAME = 'Brantley Wildfire Rescue Team';
+const ADMIN_DISPLAY_NAME = 'Wildfire Rescue Team';
 const ADMIN_THREAD_CONTEXT = {
 	id: '__admin__',
-	title: 'Brantley Wildfire Rescue Team'
+	title: 'Wildfire Rescue Team'
 };
 
 async function notifyOwner(

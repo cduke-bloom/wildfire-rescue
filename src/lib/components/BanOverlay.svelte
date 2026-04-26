@@ -18,7 +18,7 @@
 			{/if}
 			<p>
 				You can no longer post listings, send messages, or take any action on
-				Brantley Wildfire Rescue with this account.
+				Southeast Georgia Wildfire Rescue with this account.
 			</p>
 			<p>
 				If you believe this was a mistake, contact a moderator. Creating a new
