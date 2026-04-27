@@ -1,3 +1,28 @@
-# allow crawling everything by default
+# Explicit allow for Facebook / Meta scrapers — some implementations
+# warn when there's no explicit rule, even when the wildcard would apply.
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: facebookexternalhit/1.1
+Allow: /
+
+User-agent: Facebot
+Allow: /
+
+User-agent: meta-externalagent
+Allow: /
+
+User-agent: meta-externalfetcher
+Allow: /
+
+# Twitter / X
+User-agent: Twitterbot
+Allow: /
+
+# LinkedIn
+User-agent: LinkedInBot
+Allow: /
+
+# Default: allow crawling everything
 User-agent: *
 Disallow:
