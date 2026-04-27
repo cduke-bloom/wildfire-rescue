@@ -1,0 +1,32 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+	<defs>
+		<linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+			<stop offset="0%" stop-color="#fb923c" />
+			<stop offset="55%" stop-color="#ea580c" />
+			<stop offset="100%" stop-color="#9a3412" />
+		</linearGradient>
+	</defs>
+
+	<rect width="1200" height="630" fill="url(#bg)" />
+
+	<!-- Subtle radial highlight top-left -->
+	<circle cx="200" cy="160" r="280" fill="white" opacity="0.06" />
+
+	<!-- Icon: white house + red heart, sized for the card -->
+	<g transform="translate(85, 100) scale(0.84)">
+		<path d="M 256 120 L 116 244 L 116 396 Q 116 412 132 412 L 380 412 Q 396 412 396 396 L 396 244 Z" fill="white" />
+		<path d="M 256 100 L 86 252 L 116 252 L 256 132 L 396 252 L 426 252 Z" fill="white" />
+		<path d="M 256 366 C 252 362 188 322 188 274 C 188 250 206 234 228 234 C 240 234 250 240 256 250 C 262 240 272 234 284 234 C 306 234 324 250 324 274 C 324 322 260 362 256 366 Z" fill="#dc2626" />
+	</g>
+
+	<g fill="white" font-family="Helvetica, Arial, sans-serif">
+		<text x="540" y="200" font-size="62" font-weight="700">Southeast Georgia</text>
+		<text x="540" y="278" font-size="62" font-weight="700">Wildfire Rescue</text>
+
+		<text x="540" y="365" font-size="28" font-weight="400">A free community board connecting</text>
+		<text x="540" y="405" font-size="28" font-weight="400">families displaced by wildfire with hosts</text>
+		<text x="540" y="445" font-size="28" font-weight="400">and donors — no money exchanged.</text>
+
+		<text x="540" y="540" font-size="36" font-weight="600">segawildfirerescue.org</text>
+	</g>
+</svg>
